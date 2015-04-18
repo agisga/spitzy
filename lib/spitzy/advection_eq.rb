@@ -1,5 +1,3 @@
-require 'gnuplot'
-
 # Solves the 1D inear advection equation:
 #
 #   PDE: du/dt + a * du/dx = 0,
@@ -48,28 +46,6 @@ class AdvectionEq
   # Print the PDE
   def equation
     puts "PDE: du/dt + a * du/dx = 0, 0 < x < xmax and 0 < t < tmax, u(0,t) = u(xmax, t)"
-  end
-
-  # Plot the numeric solution
-  def plot(title, *t_indices)
-    return nil if u.empty?
-
-    Gnuplot.open do |gp|
-      Gnuplot::Plot.new(gp) do |plot|
-        plot.title title.to_s
-        plot.xlabel "x"
-        plot.ylabel "u(x,t)"
-
-        t_indices.each do |i|
-          x = @x
-          y = @u[i]
-          plot.data << Gnuplot::DataSet.new([x,y]) do |ds|
-            ds.with = "lines"
-            ds.title = "t = #{@t[i]}"
-          end
-        end
-      end
-    end
   end
 
   ######### Available numeric schemes ##########
