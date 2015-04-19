@@ -1,21 +1,63 @@
-# Solves the 1D inear advection equation:
+# Numerically solves the 1D linear advection equation:
 #
-#   PDE: du/dt + a * du/dx = 0,
-#   domain: 0 < x < xmax and 0 < t < tmax, 
-#   periodic boundary consitions: u(0,t) = u(xmax, t),
-#
-# with stepsizes dx and dt.
-#
-# The initial condition must be supplied as a block, 
-# and is saved as the proc object @ic.
+#  * PDE: du/dt + a * du/dx = 0,
+#  * on the domain: 0 < x < xmax and 0 < t < tmax, 
+#  * with periodic boundary consitions: u(0,t) = u(xmax, t),
+#  * with initial condition as supplied by the user.
+#   
 class AdvectionEq
 
+  # Attribute reader available for the following attributes:
+  # * +dx+ - time step in x                   
+  # * +dt+ - time step in t
+  # * +a+  - parameter in the 1D linear advection equation
+  # * +x+  - array of space points
+  # * +t+  - array of time points
+  # * +mx+ - number of space points (i.e. length of +x+)
+  # * +mt+ - number of time points (i.e. length of +t+)
+  # * +u+  - the numerical solution as an array of arrays
+  # * +method+ - the numerical scheme applied
   attr_reader :dx, :dt, :a, :x, :t, :mx, :mt, :u, :method
 
-  # Initialize the parameters and solve the equation
-  # using one of the numeric solver schemes
-  # :upwind, :lax_friedrichs, :leapfrog or :lax_wendroff
-  # (default is :lax_wendroff).
+  # Constructor for all solver routines for the 1D linear advection equation:
+  #  * PDE: du/dt + a * du/dx = 0,
+  #  * on the domain: 0 < x < xmax and 0 < t < tmax, 
+  #  * with periodic boundary consitions: u(0,t) = u(xmax, t),
+  #  * with initial condition as supplied by the user.
+  #
+  # It initializes the parameters and solves the equation
+  # using one of the methods: 
+  # Upwind, Leapfrog, Lax-Friedrichs, Lax-Wendroff.
+  #
+  # ==== Arguments
+  #
+  # * +params+ - Various parameters for the advection equation supplied as a +hash+ (see below).
+  # 
+  # * +&ic+    - The initial condition which must be supplied as a +proc+ object.
+  #              The initial condition is a function in x at time t=0.
+  #
+  # ==== Parameters
+  #
+  # * +dx+ - Stepsize in space, i.e. in x
+  #
+  # * +dt+ - Stepsize in time, i.e. in t
+  #
+  # * +a+  - Constant +a+ in the PDE du/dt + a * du/dx = 0
+  #
+  # * +xmax+ - The right boundary of the space domain 0 < x < +xmax+
+  #
+  # * +tmax+ - The final time, 0 < t < +tmax+
+  #
+  # * +:method+ - The numerical scheme used to solve the PDE. Possible values are:
+  #               :upwind, :lax_friedrichs, :leapfrog or :lax_wendroff (default is :lax_wendroff).
+  #
+  # ==== Usage
+  #
+  # ic = proc { |x| Math::cos(2*Math::PI*x) + 0.2*Math::cos(10*Math::PI*x) }
+  # numsol = AdvectionEq.new('dx'=>1.0/101, 'dt'=>0.95/101, 'a'=>1.0, 
+  #                          'xmax'=>1.0, 'tmax'=>10.0, 
+  #                          method: :upwind, &ic)
+  #
   def initialize(params, &ic)
     params = { method: :lax_wendroff }.merge(params) 
     @dx = params['dx'] # x step size
@@ -39,13 +81,18 @@ class AdvectionEq
   end
 
   # Evaluate the initial condition at x0
+  #
+  # ==== Arguments
+  #
+  # * +x0+ - A floating point number
+  #
   def ic(x0)
     @ic.call(x0)
   end
 
-  # Print the PDE
+  # Get a character string representing the PDE, its domain and boundary condition. 
   def equation
-    puts "PDE: du/dt + a * du/dx = 0, 0 < x < xmax and 0 < t < tmax, u(0,t) = u(xmax, t)"
+    "du/dt + #{@a} * du/dx = 0, 0 < x < #{@x[@mx-1]} and 0 < t < #{@t[@mt-1]}, u(0,t) = u(#{@x[@mx-1]}, t)"
   end
 
   ######### Available numeric schemes ##########
@@ -70,7 +117,7 @@ class AdvectionEq
 
     # Solves the 1D linear advection equation 
     # du/dt + a * du/dx = 0
-    # with the Lachs-Friedrichs scheme.
+    # with the Lax-Friedrichs scheme.
     def lax_friedrichs
       @u[0] = @mx.times.map { |j| self.ic(@x[j]) } # IC: u(x,0)
       alpha = @a*@dt/@dx
@@ -105,7 +152,7 @@ class AdvectionEq
 
     # Solves the 1D linear advection equation 
     # du/dt + a * du/dx = 0
-    # with the LaxWendroff scheme.
+    # with the Lax-Wendroff scheme.
     def lax_wendroff
       @u[0] = @mx.times.map { |j| self.ic(@x[j]) } # IC: u(x,0)
       alpha = @a*@dt/@dx
