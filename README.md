@@ -5,7 +5,7 @@
 Spitzy is this cute pomeranian.
 Spitzy reads backwards as *yztips*, which translates into:
 
-__ *Y*our *Z*appy-*T*appy *I*nitial value *P*artial (and ordinary) differential equation *S*olver __
+** *Y*our *Z*appy-*T*appy *I*nitial value *P*artial (and ordinary) differential equation *S*olver**
 
 Now, spitzy is also a ruby library in which I am building a comprehensive collection of numerical methods for differential equations, written in pure Ruby.
 To my knowledge, apart from an [interface with Fortran code](https://rubygems.org/gems/rb-daspk/versions/0.0.7-x86-mswin32-60), there currently does not exist another differential equation solver gem for Ruby.
