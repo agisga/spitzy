@@ -10,8 +10,10 @@ class Ode
   # * +mx+ - number of points (i.e. length of +x+)
   # * +fx+ - value of f at every point in x
   # * +u+  - the numerical solution as an array
+  # * +tol+    - the error tolerance of the method (only applicable for methods
+  #              with automatic step size adjustment)
   # * +method+ - the numerical scheme applied
-  attr_reader :x, :mx, :fx, :u, :method
+  attr_reader :x, :mx, :fx, :u, :tol, :method
 
   # Constructor for all solver routines for the initial value problem:
   #  * dy/dx = f(x,y), xmin < x < xmax, 
@@ -35,10 +37,12 @@ class Ode
   # * +maxiter+ - The maximal number of performed iterations for methods with automatic step size adjustment.
   #
   # * +method+  - The numerical scheme used to solve the ODE. Possible values are:
-  #               :dopri, :euler, :ab2, :am3 (default is :dopri).
+  #               :dopri, :euler, :ab2. 
+  #               Currently, the default is :dopri (Dormand-Prince is also currently the default method in MATLAB 
+  #               and GNU Octave's ode45 solver and is the default choice for the Simulink's model explorer solver).
   #
   # * +&f+      - The right hand side of the differential equation which must be supplied as a +proc+ object.
-  #               It is a function of y and t, where y should be the _first_ argument, and t the _second_.
+  #               It is a function of x and y, where x should be the _first_ argument, and y the _second_.
   #
   # ==== Usage
   #
@@ -50,8 +54,9 @@ class Ode
     @dx = dx
     @xmin = xrange[0]
     @xmax = xrange[1]
-
     @yini = yini
+    @maxiter = maxiter
+    @tol = tol
     @f = f 
     @x = [] # Stores the x grid
     @fx = [] # Stores the values of f at every point in x
@@ -62,11 +67,12 @@ class Ode
       when :euler then euler
       when :ab2 then ab2
       when :am3 then am3
+      when :dopri then dopri
       else raise(ArgumentError, "#{@method} is not a valid method.")
     end
   end
 
-  # Evaluate the function f(y,x) at y=y0 and x=x0
+  # Evaluate the function f(x,y) at x=x0 and y=y0 
   #
   # ==== Arguments
   #
@@ -74,8 +80,8 @@ class Ode
   #
   # * +y0+ - A floating point number representing y(x0)
   #
-  def f(y0, x0)
-    @f.call(y0, x0)
+  def f(x0, y0)
+    @f.call(x0, y0)
   end
 
   ######### Available numeric schemes ##########
@@ -85,65 +91,70 @@ class Ode
     # Solve the initial value problem
     #  * dy/dx = f(x,y), xmin < x < xmax, 
     #  * y(xmin) = yini
-    # with the forward Euler scheme.
+    # with the forward Euler scheme u[n+1] = u[n] + dx * f[n].
     def euler 
       @x = (@xmin..@xmax).step(@dx).to_a # x steps
       @x << @xmax if @x.last < @xmax
       @mx = @x.length # Number of x steps
       @u[0] = @yini
-      @fx[0] = self.f(@u[0], @x[0])
+      @fx[0] = self.f(@x[0], @u[0])
       0.upto(@mx-2) do |n|
         @u[n+1] = @u[n] + @dx * @fx[n]
-        @fx[n+1] = self.f(@u[n+1], @x[n+1])
+        @fx[n+1] = self.f(@x[n+1], @u[n+1])
       end
+      #tol and maxiter not relevant for the Euler method
+      @tol = nil
+      @maxiter = nil
     end
    
+    # Solve the initial value problem
+    #  * dy/dx = f(x,y), xmin < x < xmax, 
+    #  * y(xmin) = yini
+    # with the Adams-Bashforth method of order 2, 
+    # given by the explicit formula u[n+1] = u[n] + dx/2 * (3*f[n] - f[n-1]).
+    # Since the method requires the last two functional values for the approximation 
+    # of the next functional value, a Runge-Kutta method (Heun’s method) of 
+    # order 2 is applied to approximate the functional value at the second time step.
+    #
+    def ab2 
+      @x = (@xmin..@xmax).step(@dx).to_a # x steps
+      @x << @xmax if @x.last < @xmax
+      @mx = @x.length # Number of x steps
 
-    #File                    odedopri.py
+      @u[0] = @yini
+      @fx[0] = self.f(@x[0], @u[0])
+      # Runge-Kutta of order 2 for the second time step
+      @u[1] = @u[0] + @dx/2.0 * (@fx[0] + self.f(@x[1], @u[0] + @dx*@fx[0]))
+      @fx[1] = self.f(@x[1], @u[1])
+
+      1.upto(@mx-2) do |n|
+        @u[n+1] = @u[n] + @dx/2.0 * (3.0*@fx[n] - @fx[n-1])
+        @fx[n+1] = self.f(@x[n+1], @u[n+1])
+      end
+
+      #tol and maxiter not relevant for the this method
+      @tol = nil
+      @maxiter = nil
+    end
+ 
+    # Solve the initial value problem
+    #  * dy/dx = f(x,y), xmin < x < xmax, 
+    #  * y(xmin) = yini
+    # with the forward Dormand-Prince method.
+    #
+    # This method automatically adapts the step size in order to keep the error
+    # of the numerical solution below the tolerance level +tol+. However, the step size
+    # is not allowed to exceed the specified maximal step size +dx+.
+    # The algorithm throws an exception if it fails to compute the numerical solution
+    # on the given x domain in less than or equal to +maxiter+ iterations.
     # 
-    #Synopsis
-    #      double odedopri(double (*fxy)(double x, double y),
-    #                      double x0, double y0, double x1, double tol,
-    #                      double hmax,  double hmin, int maxiter)
+    # === Reference
+    #
+    #     J.R. Dormand, P.J. Prince, "A family of embedded Runge-Kutta formulae"
+    #
+    #     E.Hairer, S.P.Norsett and G.Wanner, "Solving Differential Equations I, Nonstiff Problems", p. 176.
     # 
-    #Parameters
-    #      fxy               Input: derivative function y' = f(x, y)
-    #                           y is the dependent variable, x is the independent
-    #                           variable
-    #      x0, y0            Input: initial points, x0 <= x <= x1    y(x0) = y0
-    #      x1                Input: final value of x
-    #      tol               Input: tolerance
-    #      hmax              Input: maximum step size
-    #      hmin              Input: minimum step size
-    #      maxiter           Input: maximum number of iterations
-    #      flag              Input: return flag
-    #                           0   no errors
-    #                           1   hmin exceeded
-    #                           2   maximum iterations exceeded
-    # 
-    #Return value
-    #      value of y at last step x
-    # 
-    #Description
-    #      The routine odedopri() implements the Dormand-Prince method of
-    #      solving an ordinary differential equation of the first order
-    #      y' = f(x,y).
-    # 
-    #Reference
-    #      The coefficients were obtained from
-    # 
-    #          E.Hairer, S.P.Norsett and G.Wanner[1991],
-    #             "Solving Differential Equations I, Nonstiff Problems",
-    #             2e, Springer-Verlag, p. 178
-    # 
-    #WARNING
-    #      Check the flag after calling this routine!
-    # 
-    #Revisions
-    #      1998.05.02      first version
-    #"""
-    # 
-    def dopri(yini:,  xrange:,  tol:,  &f)
+    def dopri
       a21 = 1.0/5.0
       a31 = 3.0/40.0
       a32 = 9.0/40.0
@@ -191,12 +202,13 @@ class Ode
 
       @x[0] = @xmin
       @u[0] = @yini
+      @fx[0] = self.f(@x[0], @u[0])
       h = @dx 
       i = 0
 
       0.upto(@maxiter) do |iter|
          # Compute the function values
-         k1 = self.f(@x[i], @y[i])
+         k1 = @fx[i] 
          k2 = self.f(@x[i] + c2*h, @u[i] + h*(a21*k1))
          k3 = self.f(@x[i] + c3*h, @u[i] + h*(a31*k1+a32*k2))
          k4 = self.f(@x[i] + c4*h, @u[i] + h*(a41*k1+a42*k2+a43*k3))
@@ -204,19 +216,19 @@ class Ode
          k6 = self.f(@x[i] + h, @u[i] + h*(a61*k1+a62*k2+a63*k3+a64*k4+a65*k5))
          k7 = self.f(@x[i] + h, @u[i] + h*(a71*k1+a72*k2+a73*k3+a74*k4+a75*k5+a76*k6))
 
-         error = (b1order5 - b1order4)*k1 + (b3order5 - b3order4)*k3 +
-                  (b4order5 - b4order4)*k4 + (b5order5 - b5order4)*k5 + 
-                  (b6order5 - b6order4)*k6 + (b7order5 - b7order4)*k7
+         error = (b1order5 - b1order4)*k1 + (b3order5 - b3order4)*k3 + (b4order5 - b4order4)*k4 + 
+           (b5order5 - b5order4)*k5 + (b6order5 - b6order4)*k6 + (b7order5 - b7order4)*k7
          error = error.abs
 
          # error control
-         if error < tol then
-            x[i+1] = x[i] + h
-            u[i+1] = u[i+1] + h * (b1*k1 + b3*k3 + b4*k4 + b5*k5 + b6*k6)
+         if error < @tol then
+            @x[i+1] = @x[i] + h
+            @u[i+1] = @u[i] + h * (b1order5*k1 + b3order5*k3 + b4order5*k4 + b5order5*k5 + b6order5*k6)
+            @fx[i+1] = self.f(@x[i+1], @u[i+1])
             i = i+1
          end
 
-         delta = 0.84 * (tol / error)**(1.0/5.0)
+         delta = 0.84 * (@tol / error)**0.2
          if delta <= 0.1 then
             h = h * 0.1
          elsif delta >= 4.0 then
@@ -234,6 +246,8 @@ class Ode
            h = @xmax - @x[i]
          end
       end
+
+      @mx = @x.length # Number of x steps
 
       raise(RuntimeError, "Maximal number of iterations reached 
             before evaluation of the solution on the entire x interval 
