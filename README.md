@@ -44,6 +44,8 @@ rake install
 
 ## Usage
 
+* [Ordinary differential equations](http://agisga.github.io/ODE/)
+
 * [Advection equation](http://agisga.github.io/Advection-Equation/)
 
 * ....
