@@ -1,3 +1,6 @@
+# Copyright (c) 2015 Alexej Gossmann 
+
+
 # Numerically solves an initial value problem of the form 
 #
 #  * dy/dx = f(x,y), xmin < x < xmax, 

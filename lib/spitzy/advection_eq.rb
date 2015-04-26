@@ -1,3 +1,6 @@
+# Copyright (c) 2015 Alexej Gossmann 
+
+
 # Numerically solves the 1D linear advection equation:
 #
 #  * PDE: du/dt + a * du/dx = 0,
@@ -21,9 +24,9 @@ class AdvectionEq
 
   # Constructor for all solver routines for the 1D linear advection equation:
   #  * PDE: du/dt + a * du/dx = 0,
-  #  * on the domain: 0 < x < xmax and 0 < t < tmax, 
-  #  * with periodic boundary consitions: u(0,t) = u(xmax, t),
-  #  * with initial condition as supplied by the user.
+  #  * on the domain: xmin < x < xmax and tmin < t < tmax, 
+  #  * with periodic boundary consitions: u(xmin,t) = u(xmax,t),
+  #  * with initial condition u(x,tmin) as supplied by the user.
   #
   # It initializes the parameters and solves the equation
   # using one of the methods: 
@@ -31,46 +34,46 @@ class AdvectionEq
   #
   # ==== Arguments
   #
-  # * +params+ - Various parameters for the advection equation supplied as a +hash+ (see below).
-  # 
-  # * +&ic+    - The initial condition which must be supplied as a +proc+ object.
-  #              The initial condition is a function in x at time t=0.
+  # * +xrange+  - An array of the form [xmin, xmax]. The space domain xmin<=x<=xmax 
+  #               on which the solution will be evaluated.
   #
-  # ==== Parameters
+  # * +trange+  - An array of the form [tmin, tmax]. The time domain tmin<=t<=tmax 
+  #               on which the solution will be evaluated.
   #
-  # * +dx+ - Stepsize in space, i.e. in x
+  # * +dx+      - Stepsize in space, i.e. in x
   #
-  # * +dt+ - Stepsize in time, i.e. in t
+  # * +dt+      - Stepsize in time, i.e. in t
   #
-  # * +a+  - Constant +a+ in the PDE du/dt + a * du/dx = 0
+  # * +a+       - The constant speed +a+ in the PDE du/dt + a * du/dx = 0
   #
-  # * +xmax+ - The right boundary of the space domain 0 < x < +xmax+
+  # * +method+ - The numerical scheme used to solve the PDE. Possible values are:
+  #              :upwind, :lax_friedrichs, :leapfrog or :lax_wendroff (default is :lax_wendroff).
   #
-  # * +tmax+ - The final time, 0 < t < +tmax+
-  #
-  # * +:method+ - The numerical scheme used to solve the PDE. Possible values are:
-  #               :upwind, :lax_friedrichs, :leapfrog or :lax_wendroff (default is :lax_wendroff).
+  # * +&ic+     - The initial condition which must be supplied as a +proc+ object.
+  #               The initial condition is a function in x at time t=0.
   #
   # ==== Usage
   #
   # ic = proc { |x| Math::cos(2*Math::PI*x) + 0.2*Math::cos(10*Math::PI*x) }
-  # numsol = AdvectionEq.new('dx'=>1.0/101, 'dt'=>0.95/101, 'a'=>1.0, 
-  #                          'xmax'=>1.0, 'tmax'=>10.0, 
-  #                          method: :upwind, &ic)
+  # numsol = AdvectionEq.new(xrange: [0.0,1.0], trange: [0.0,10.0], dx: 1.0/101, 
+  #                          dt: 0.95/101, a: 1.0, method: :upwind, &ic)
   #
-  def initialize(params, &ic)
-    params = { method: :lax_wendroff }.merge(params) 
-    @dx = params['dx'] # x step size
-    @dt = params['dt'] #t step size
-    @a = params['a'] # parameter in the 1-dim linear advection eq.
+  def initialize(xrange: , trange: , dx: , dt: , a: , method: :lax_wendroff, &ic)
+    raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2
+    raise(ArgumentError, "Expected trange to be an array of length 2") unless trange.length == 2
+    @dx = dx # x step size
+    @dt = dt #t step size
+    @a = a # parameter in the 1-dim linear advection eq.
     @ic = ic # initial condition
-    @x = (0..params['xmax']).step(dx).to_a # x steps
-    @t = (0..params['tmax']).step(dt).to_a # t steps
+    @x = (xrange[0]..xrange[1]).step(dx).to_a # x steps
+    @x << xrange[1] if @x.last < xrange[1]
     @mx = @x.length # Number of x steps
+    @t = (trange[0]..trange[1]).step(dt).to_a # t steps
+    @t << trange[1] if @t.last < trange[1]
     @mt = @t.length # Number of t steps
     @u = [] # Stores numerical solution
 
-    @method = params[:method]
+    @method = method
     case @method
       when :upwind then upwind
       when :lax_friedrichs then lax_friedrichs
@@ -92,7 +95,7 @@ class AdvectionEq
 
   # Get a character string representing the PDE, its domain and boundary condition. 
   def equation
-    "du/dt + #{@a} * du/dx = 0, 0 < x < #{@x[@mx-1]} and 0 < t < #{@t[@mt-1]}, u(0,t) = u(#{@x[@mx-1]}, t)"
+    "du/dt + #{@a} * du/dx = 0, #{@x[0]} < x < #{@x[-1]} and #{@t[0]} < t < #{@t[-1]}, u(0,t) = u(#{@x[-1]}, t)"
   end
 
   ######### Available numeric schemes ##########
