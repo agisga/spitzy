@@ -40,8 +40,11 @@ class Ode
   # * +maxiter+ - The maximal number of performed iterations for methods with automatic step size adjustment.
   #
   # * +method+  - The numerical scheme used to solve the ODE. Possible values are:
-  #               :dopri, :euler, :ab2. 
-  #               Currently, the default is :dopri (Dormand-Prince is also currently the default method in MATLAB 
+  #               +:dopri+ (Dormand-Prince), +:euler+ (Forward Euler), +:ab2+ (Adams-Bashforth of order 2). 
+  #               +:dopri+ performs an automatic step size adjustment and error estimation in order to 
+  #               keep the error of the numerical solution below +tol+. +:euler+ and +:ab2+ operate on a 
+  #               fixed step size +dx+, and cannot estimate the error of the numerical solution.
+  #               Currently, the default is +:dopri+ (Dormand-Prince is currently also the default method in MATLAB 
   #               and GNU Octave's ode45 solver and is the default choice for the Simulink's model explorer solver).
   #
   # * +&f+      - The right hand side of the differential equation which must be supplied as a +proc+ object.
@@ -49,8 +52,32 @@ class Ode
   #
   # ==== Usage
   #
-  # ...to be written
+  #    # Dormand-Prince example 1
+  #    f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
+  #    dopri_sol = Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, &f) 
+  #    puts "The numerical solution at x=4 is u(4)=#{dopri_sol.u[-1]}"
   #
+  #    # Dormand-Prince example 2
+  #    f = proc { |t,y| -2.0 * y + Math::exp(-2.0 * (t - 6.0)**2) }
+  #    dopri_sol = Ode.new(xrange: [0.0,10.0], dx: 1.5, yini: 1.0, 
+  #                        tol: 1e-6, maxiter: 1e6, &f) 
+  #    # Plot dopri_sol.x agains dopri_sol.u to observe step size adaptivity
+  #
+  #    # Euler example 1
+  #    f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
+  #    euler_sol = Ode.new(xrange: [1.0,4.0], dx: 0.01,
+  #                        yini: 0.0, method: :euler, &f) 
+  #
+  #    # Adams-Bashforth example 1
+  #    f = proc { |t,y| -2.0*t*y }
+  #    ab2_sol = Ode.new(xrange: [0.0,4.0], dx: 0.1, 
+  #                      yini: 1.0, method: :ab2, &f) 
+  #    exact_sol = ab2_sol.x.map { |tt| Math::exp(-(tt**2)) }
+  #    maxerror1 = exact_sol1.each_with_index.map {|n,i| n - ab2_sol1.u[i] }.max.abs
+  #    puts "Number of x steps: #{ab2_sol1.mx}"
+  #    puts "Error: #{maxerror1}maxerror2}"
+  #    puts "Error ratio: #{maxerror1/maxerror2}"
+
   def initialize(xrange:, dx:, yini:, tol: 1e-2, maxiter: 1e6, method: :dopri, &f)
 
     raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2
@@ -116,8 +143,8 @@ class Ode
     # with the Adams-Bashforth method of order 2, 
     # given by the explicit formula u[n+1] = u[n] + dx/2 * (3*f[n] - f[n-1]).
     # Since the method requires the last two functional values for the approximation 
-    # of the next functional value, a Runge-Kutta method (Heun’s method) of 
-    # order 2 is applied to approximate the functional value at the second time step.
+    # of the next functional value, a Runge-Kutta method of order 2 (Heun’s method) 
+    # is applied to approximate the functional value at the second time step.
     #
     def ab2 
       @x = (@xmin..@xmax).step(@dx).to_a # x steps
@@ -143,13 +170,13 @@ class Ode
     # Solve the initial value problem
     #  * dy/dx = f(x,y), xmin < x < xmax, 
     #  * y(xmin) = yini
-    # with the forward Dormand-Prince method.
+    # with the Dormand-Prince method.
     #
     # This method automatically adapts the step size in order to keep the error
     # of the numerical solution below the tolerance level +tol+. However, the step size
-    # is not allowed to exceed the specified maximal step size +dx+.
-    # The algorithm throws an exception if it fails to compute the numerical solution
-    # on the given x domain in less than or equal to +maxiter+ iterations.
+    # is not allowed to exceed the specified maximal step size +dx+ (+dx+ is also the 
+    # initial step size). The algorithm throws an exception if it fails to compute the 
+    # numerical solution on the given x domain in less than or equal to +maxiter+ iterations.
     # 
     # === Reference
     #
