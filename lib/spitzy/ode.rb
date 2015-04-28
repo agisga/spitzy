@@ -24,7 +24,7 @@ class Ode
   #
   # It initializes the parameters and solves the equation
   # using one of the methods: 
-  # Forward Euler, Adams-Bashforth order 2, Adams-Moulton order 3, and more methods to be implemented
+  # Dormand-Prince, Forward Euler, Adams-Bashforth order 2. TODO: Implement more methods.
   #
   # ==== Arguments
   #
