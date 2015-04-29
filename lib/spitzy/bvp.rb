@@ -153,10 +153,18 @@ class Bvp
   
   private
 
-    # Solve the initial value problem
-    #  * dy/dx = f(x,y), xmin < x < xmax, 
-    #  * y(xmin) = yini
-    # with the forward Euler scheme u[n+1] = u[n] + dx * f[n].
+    # Solve the boundary value problem
+    #
+    #   * ODE: -(a*u')' + b*u' + c = f, xmin<x<xmax,
+    #   * where a, b, c, f and u are functions of x,
+    #   * with boundary condition: u(xmin) = bc[1], u(xmax) = bc[2]
+    #
+    # using the finite elements method with piecewise linear elements.
+    #
+    # ==== References
+    #
+    # * A. Quarteroni, R. Sacco, F. Saleri, "Numerical Mathematics", 2nd ed., section 7.4.
+    #
     def lin_fin_elt 
       gridcenters = ((@xmin+@dx/2)..(@xmax-@dx/2)).step(@dx).to_a
       a_gridcenters = NMatrix.new([@mx-1,1], gridcenters.map {|x0| self.a(x0) }, dtype: :float64)
