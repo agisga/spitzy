@@ -46,6 +46,8 @@ rake install
 
 * [Ordinary differential equations](http://agisga.github.io/ODE/)
 
+* [Two point boundary value problem](http://agisga.github.io/BVP/)
+
 * [Advection equation](http://agisga.github.io/Advection-Equation/)
 
 * ....

@@ -4,9 +4,9 @@ require 'nmatrix'
 
 # Numerically solves a boundary value problem of the general form:
 #
-#   * ODE: -(a*u')' + b*u' + c = f, xmin<x<xmax,
+#   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
 #   * where a, b, c, f and u are functions of x,
-#   * with boundary condition: u(xmin) = bc[1], u(xmax) = bc[2].
+#   * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2].
 #   
 class Bvp
 
@@ -23,9 +23,9 @@ class Bvp
 
   # Constructor for all solver routines for the boundary value problem:
   #
-  #   * ODE: -(a*u')' + b*u' + c = f, xmin<x<xmax,
+  #   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
   #   * where a, b, c, f and u are functions of x,
-  #   * with boundary condition: u(xmin) = bc[1], u(xmax) = bc[2].
+  #   * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2].
   #
   # It initializes the parameters and solves the equation
   # using one of the methods: 
@@ -155,9 +155,9 @@ class Bvp
 
     # Solve the boundary value problem
     #
-    #   * ODE: -(a*u')' + b*u' + c = f, xmin<x<xmax,
+    #   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
     #   * where a, b, c, f and u are functions of x,
-    #   * with boundary condition: u(xmin) = bc[1], u(xmax) = bc[2]
+    #   * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2]
     #
     # using the finite elements method with piecewise linear elements.
     #
