@@ -2,9 +2,12 @@
 
 require "spitzy/version"
 
+require "nmatrix"
+
 require "spitzy/advection_eq.rb"
 require "spitzy/ode.rb"
 require "spitzy/bvp.rb"
+#require "spitzy/poissons_eq.rb"
 
 #module Spitzy
 #  # Your code goes here...

@@ -1,7 +1,5 @@
 # Copyright (c) 2015 Alexej Gossmann 
 
-require 'nmatrix'
-
 # Numerically solves a boundary value problem of the general form:
 #
 #   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
