@@ -4,22 +4,64 @@ title:  "Documentation"
 date:   2015-05-05 13:10:08
 ---
 
-# [Introduction](https://github.com/agisga/spitzy/wiki/Introduction)
+# Table of Contents
+
+1. [Introduction](#introduction)
+
+2. [Initial Value Problems](#ivp)
+
+  * [Forward Euler](#euler)
+
+  * [Adams-Bashforth of Order 2](#ab2)
+
+  * [Dormand-Prince](#dopri)
+
+3. [Two-point Boundary Value Problems](#bvp)
+
+  * [Linear Finite Element Galerkin](#lin_fin_elt)
+
+4. [2D Poisson's Equation](#poissons_eq)
+
+  * [Five-point Laplacian](#five_pt)
+
+5. [1D Linear Advection Equation](#advection_eq)
+
+  * [Upwind](#upwind)
+
+  * [Leapfrog](#leapfrog)
+
+  * [Lax-Friedrichs](#lax_friedrichs)
+
+  * [Lax-Wendroff](#lax_wendroff)
+
+6. [Conclusions and Future Work](#conclusion)
+
+7. [References](#references)
+
+---------------------------------------------------
+
+<div id='introduction'/>
+##Introduction
 TO BE WRITTEN
 
-# Initial Value Problems
+<div id='ivp'/>
+##Initial Value Problems
 TO BE WRITTEN
 
-## Forward Euler
+<div id='euler'/>
+###Forward Euler
 TO BE WRITTEN
 
-## Adams-Bashforth of Order 2
+<div id='ab2'/>
+###Adams-Bashforth of Order 2
 TO BE WRITTEN
 
-## Dormand-Prince
+<div id='dopri'/>
+###Dormand-Prince
 TO BE WRITTEN
 
-# Two-point Boundary Value Problems
+<div id='bvp'/>
+##Two-point Boundary Value Problems
 
 A two-point boundary value problem that can be solved with 'spitzy' is an ordinary differential equation of the following general form:
 
@@ -29,9 +71,10 @@ A two-point boundary value problem that can be solved with 'spitzy' is an ordina
 
 Currently the linear finite element Galerkin method is the only scheme implemented to solve this problem.
 
-## Linear Finite Element Galerkin
+<div id='lin_fin_elt'/>
+### Linear Finite Element Galerkin
 
-### Background
+#### Background
 
 This section is largely based on section 12.4 in [QSS07]. The interested reader is referred there for a more rigorous presentation of what follows.
 
@@ -45,7 +88,7 @@ We are looking for a [weak solution](http://en.wikipedia.org/wiki/Weak_solution)
 $$\underset{[a,b]}{\int} \alpha u' v' dx + \underset{[a,b]}{\int} \beta u' v dx + \underset{[a,b]}{\int} \gamma u v dx = \underset{[a,b]}{\int} f v dx,$$
 for every $v$ in the so-called [test-function space](http://en.wikipedia.org/wiki/Distribution_%28mathematics%29#Test_functions_and_distributions) $V$, which basically contains functions that have square-integrable [distributional derivatives](http://en.wikipedia.org/wiki/Distribution_%28mathematics%29#Derivatives_of_distributions) and vanish on the boundary of the domain of the ODE. If $u$ is a solution to the original formulation of the ODE then it also satisfies to integral formulation. However, a solution $u$ of the integral equation might not be twice differentiable.
 
-#### Galerkin Method
+##### Galerkin Method
 
 The [Galerkin method](http://en.wikipedia.org/wiki/Galerkin_method) approximates $V$ with a finite dimensional functional space $V\subscript{h}$, which leads to a finite number of test functions $v$ that need to be tested against $u$ with the above integral equation. We denote the basis functions of $V\subscript{h}$ by $\phi\subscript{1}, \phi\subscript{2}, \ldots, \phi\subscript{N}$. Moreover, if we assume that $u$ also lies in the space $V\subscript{h}$, then the problem reduces to a linear system
 $$A\vec{u} = \vec{f},$$
@@ -56,7 +99,7 @@ $$f\subscript{i} = \underset{[a,b]}{\int} \alpha f' \phi\subscript{i}' dx + \und
 
 The structure of $A$ and the degree of accuracy of the numerical solution depends on the form of the basis functions $\phi\subscript{1}, \phi\subscript{2}, \ldots, \phi\subscript{N}$, that is, on the choice of $V\subscript{h}$.
 
-#### Finite Element Method
+##### Finite Element Method
 
 The [finite element method](http://en.wikipedia.org/wiki/Finite_element_method) chooses $V_h$ to be the space of continuous piecewise polynomials which are defined on subintervals of $[a, b]$ and vanish at $a$ and $b$.
 
@@ -65,7 +108,7 @@ Given an equally spaced grid $a = x\subscript{0} < x\subscript{1} < \ldots < x\s
 
 ![Piecewise linear basis functions](/images/fin_elt_basis_func.svg?raw=true "Piecewise linear basis functions")
 
-### Implementation
+#### Implementation
 
 I have implemented the linear finite element Galerkin method in class `Bvp` in Ruby for my project [spitzy](https://github.com/agisga/spitzy). It takes as inputs the interval of $x$ values as well as the Dirichlet boundary conditions at the two edges of the interval, the desired number of equally spaced grid points on which the numerical solution will be evaluated, and the functions $\alpha(x)$, $\beta(x)$, $\gamma(x)$ and $f(x)$ as `Proc` objects (or as `Numeric` if the function is constant).
 
@@ -73,7 +116,7 @@ The linear finite element Galerkin method boils down to a linear system
 $A\vec{u} = \vec{f}$, where the matrix $A$ is tridiagonal. Currently, my Ruby implementation uses the `#solve` method from the `NMatrix` gem.
 However, the memory usage as well as the speed of the algorithm can be improved, as soon as pull request [#301](https://github.com/SciRuby/nmatrix/pull/301), which implements a `#solve_tridiagonal` method, is merged into the project.
 
-### Examples
+#### Examples
 
 Now let's look at some examples.
 
@@ -81,7 +124,7 @@ Now let's look at some examples.
 * where $\alpha$, $\beta$ and $\gamma$ are continuous functions of $x$ on $[a,b]$,
 * with Dirichlet boundary condition: $u(a) = u\subscript{a}$ and $u(b) = u\subscript{b}$. -->
 
-#### Constant coefficients
+##### Constant coefficients
 
 First we look at example, where $\alpha$, $\beta$ and $\gamma$ are constants independent of $x$:
 
@@ -103,7 +146,7 @@ We compare the obtained numerical to the exact solution by plotting both using t
 
 ![BVP example 1 plot](/images/bvp1.png?raw=true "BVP example 1 plot")
 
-#### Non-constant coefficients
+##### Non-constant coefficients
 
 Now, let's consider an example where $\alpha$, $\beta$, $\gamma$ and $f$ are all functions of $x$.
 
@@ -130,31 +173,39 @@ Again, we plot both, the numerical and the exact solution, and observe that they
 
 ![BVP example 2 plot](/images/bvp2.png?raw=true "BVP example 2 plot")
 
-# 2D Poisson's Equation
+<div id='poissons_eq'/>
+##2D Poisson's Equation
 TO BE WRITTEN
 
-## Five-point Laplacian
+<div id='five_pt'/>
+### Five-point Laplacian
+
+<div id='advection_eq'/>
+##1D Linear Advection Equation
 TO BE WRITTEN
 
-# 1D Linear Advection Equation
-TO BE WRITTEN
-
-## Upwind
+<div id='upwind'/>
+### Upwind
 TO BE WRITTEN
  
-## Leapfrog
+<div id='leapfrog'/>
+### Leapfrog
 TO BE WRITTEN
 
-## Lax-Friedrichs
+<div id='lax_friedrichs'/>
+### Lax-Friedrichs
 TO BE WRITTEN
 
-## Lax-Wendroff
+<div id='lax_wendroff'/>
+### Lax-Wendroff
 TO BE WRITTEN
 
-# Conclusions and Future Work
+<div id='conclusion'/>
+##Conclusions and Future Work
 TO BE WRITTEN
 
-# References
+<div id='references'/>
+##References
 
 - [QSS07] A. Quarteroni, R. Sacco, F. Saleri (2007) *Numerical Mathematics*, 2nd ed., Texts in Applied Mathematics. Springer.
 
