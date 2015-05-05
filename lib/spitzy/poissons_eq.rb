@@ -61,7 +61,7 @@ class Poissons_eq
   #
   # ==== Usage
   #
-  def initialize(xrange:, yrange:, mx:, my:, method: :five_pt, bc:, f:)
+  def initialize(xrange:, yrange:, h:, method: :five_pt, bc:, f:)
     raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2
     raise(ArgumentError, "Expected yrange to be an array of length 2") unless yrange.length == 2
     @h = h
@@ -142,36 +142,51 @@ class Poissons_eq
     #   
     def five_pt
       # Number of interior points
-      mx_interior = @my-2
+      mx_interior = @mx-2
       my_interior = @my-2
       m_interior = mx_interior*my_interior
+      h2 = @h**2.0
 
       # Construct the right hand side for the linear system (only required at interiour points)
       @rhs = NMatrix.new([mx_interior, my_interior], dtype: :float64)
       @x_interior.each_with_indices do |v,i,j|
-        if i==0 or i==mx_interior-1 or j==0 or j==my_interior-1 then
-          rhsmat[i,j] = self.f(v, @y_interior[i,j]) - self.bc(v, @y_interior[i,j])
-        else
-          rhsmat[i,j] = self.f(v, @y_interior[i,j])
-        end
+        @rhs[i,j] = self.f(v, @y_interior[i,j])
+        @rhs[i,j] -= self.bc(v, @ymin)/h2 if j==0
+        @rhs[i,j] -= self.bc(v, @ymax)/h2 if j==my_interior-1 
+        @rhs[i,j] -= self.bc(@xmin, @y_interior[i,j])/h2 if i==0
+        @rhs[i,j] -= self.bc(@xmax, @y_interior[i,j])/h2 if i==mx_interior-1 
       end
+      @rhs = @rhs.transpose
       @rhs.reshape!([m_interior, 1])
 
       # Construct the matrix for the linear system
       @mat = NMatrix.new([m_interior, m_interior], dtype: :float64)
-      h2 = @h**2.0
-      (0..m_interior).each {|i| @mat[i,i] = -4.0 / h2 }
-      (0...m_interior).each {|i| @mat[i,i+1] = 1.0 / h2 }
-      (0...m_interior).each {|i| @mat[i+1,i] = 1.0 / h2 }
-      (0...(m_interior-my_interior)).each {|i| @mat[i,i+my_interior] = 1.0 / h2 }
-      (0...(m_interior-my_interior)).each {|i| @mat[i+my_interior,i] = 1.0 / h2 }
-      (1...mx_interior).each do |i|
-        @mat[my_interior*i-1, my_interior*i] = 0
-        @mat[my_interior*i, my_interior*i-1] = 0
+      (0..(m_interior-1)).each {|i| @mat[i,i] = -4.0 / h2 }
+      (0...(m_interior-1)).each {|i| @mat[i,i+1] = 1.0 / h2 }
+      (0...(m_interior-1)).each {|i| @mat[i+1,i] = 1.0 / h2 }
+      (0...(m_interior-mx_interior)).each {|i| @mat[i,i+mx_interior] = 1.0 / h2 }
+      (0...(m_interior-mx_interior)).each {|i| @mat[i+mx_interior,i] = 1.0 / h2 }
+      (1...my_interior).each do |i|
+        @mat[mx_interior*i-1, mx_interior*i] = 0
+        @mat[mx_interior*i, mx_interior*i-1] = 0
       end
 
       # Compute the solution at the interior points
-      u = @mat.solve(@rhs)
+      u_interior = @mat.solve(@rhs)
+      # x corresponds to columns, y corresponds to rows
+      u = NMatrix.new([@mx,@my], dtype: :float64)
+      # enforce boundary considitions
+      (0...@mx).each { |i| u[i,0] = self.bc(@x[i][0],@y[i][0]) }
+      (0...@mx).each { |i| u[i,-1] = self.bc(@x[i][-1],@y[i][-1]) }
+      (0...@my).each { |j| u[0,j] = self.bc(@x[0][j],@y[0][j]) }
+      (0...@my).each { |j| u[-1,j] = self.bc(@x[-1][j],@y[-1][j]) }
+      # populate the interior
+      1.upto(@my-2) do |j|
+        1.upto(@mx-2) do |i|
+          u[i,j] = u_interior[(j-1)*mx_interior+(i-1)]
+        end
+      end
+      @u = u.to_a
     end
 
 end
