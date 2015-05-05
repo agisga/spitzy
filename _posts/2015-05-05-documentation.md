@@ -4,9 +4,36 @@ title:  "Documentation"
 date:   2015-05-05 13:10:08
 ---
 
-A few days ago I programmed a numerical method for the solution for two-point boundary value problems, and today I discovered that I can use [MathJax](https://www.mathjax.org/) to display mathematical formulas in here (although there are some inconveniences related to the use of underscores). So, here goes another blog post!
+# [Introduction](https://github.com/agisga/spitzy/wiki/Introduction)
+TO BE WRITTEN
+
+# Initial Value Problems
+TO BE WRITTEN
+
+## Forward Euler
+TO BE WRITTEN
+
+## Adams-Bashforth of Order 2
+TO BE WRITTEN
+
+## Dormand-Prince
+TO BE WRITTEN
+
+# Two-point Boundary Value Problems
+
+A two-point boundary value problem that can be solved with 'spitzy' is an ordinary differential equation of the following general form:
+
+* ODE: $-(\alpha u')'(x) + (\beta u')(x) + (\gamma u)(x) = f(x)$, for $a < x < b$,
+* where $\alpha$, $\beta$ and $\gamma$ are constants or continuous functions of $x$ on $[a,b]$,
+* with Dirichlet boundary conditions: $u(a) = u\subscript{a}$ and $u(b) = u\subscript{b}$.
+
+Currently the linear finite element Galerkin method is the only scheme implemented to solve this problem.
+
+## Linear Finite Element Galerkin
 
 ### Background
+
+This section is largely based on section 12.4 in [QSS07]. The interested reader is referred there for a more rigorous presentation of what follows.
 
 Consider an ordinary differential equation of the following general form:
 
@@ -102,3 +129,32 @@ $$u(x) = (1-x)\sin(x).$$
 Again, we plot both, the numerical and the exact solution, and observe that they approximately agree.
 
 ![BVP example 2 plot](/images/bvp2.png?raw=true "BVP example 2 plot")
+
+# 2D Poisson's Equation
+TO BE WRITTEN
+
+## Five-point Laplacian
+TO BE WRITTEN
+
+# 1D Linear Advection Equation
+TO BE WRITTEN
+
+## Upwind
+TO BE WRITTEN
+ 
+## Leapfrog
+TO BE WRITTEN
+
+## Lax-Friedrichs
+TO BE WRITTEN
+
+## Lax-Wendroff
+TO BE WRITTEN
+
+# Conclusions and Future Work
+TO BE WRITTEN
+
+# References
+
+- [QSS07] A. Quarteroni, R. Sacco, F. Saleri (2007) *Numerical Mathematics*, 2nd ed., Texts in Applied Mathematics. Springer.
+
