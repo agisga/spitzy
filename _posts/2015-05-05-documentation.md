@@ -6,37 +6,37 @@ date:   2015-05-05 13:10:08
 
 # Table of Contents
 
-1. [Introduction](#introduction)
+* [Introduction](#introduction)
 
-2. [Initial Value Problems](#ivp)
+* [Initial Value Problems](#ivp)
 
-  * [Forward Euler](#euler)
+  - [Dormand-Prince](#dopri)
 
-  * [Adams-Bashforth of Order 2](#ab2)
+  - [Forward Euler](#euler)
 
-  * [Dormand-Prince](#dopri)
+  - [Second-Order Adams-Bashforth](#ab2)
 
-3. [Two-point Boundary Value Problems](#bvp)
+* [Two-point Boundary Value Problems](#bvp)
 
-  * [Linear Finite Element Galerkin](#lin_fin_elt)
+  - [Linear Finite Element Galerkin](#lin_fin_elt)
 
-4. [2D Poisson's Equation](#poissons_eq)
+* [2D Poisson's Equation](#poissons_eq)
 
-  * [Five-point Laplacian](#five_pt)
+  - [Five-point Laplacian](#five_pt)
 
-5. [1D Linear Advection Equation](#advection_eq)
+* [1D Linear Advection Equation](#advection_eq)
 
-  * [Upwind](#upwind)
+  - [Upwind](#upwind)
 
-  * [Leapfrog](#leapfrog)
+  - [Leapfrog](#leapfrog)
 
-  * [Lax-Friedrichs](#lax_friedrichs)
+  - [Lax-Friedrichs](#lax_friedrichs)
 
-  * [Lax-Wendroff](#lax_wendroff)
+  - [Lax-Wendroff](#lax_wendroff)
 
-6. [Conclusions and Future Work](#conclusion)
+* [Conclusions and Future Work](#conclusion)
 
-7. [References](#references)
+* [References](#references)
 
 ---------------------------------------------------
 
@@ -46,19 +46,170 @@ TO BE WRITTEN
 
 <div id='ivp'/>
 ##Initial Value Problems
-TO BE WRITTEN
 
-<div id='euler'/>
-###Forward Euler
-TO BE WRITTEN
+An initial value problem is an ordinary differential equation of the form 
 
-<div id='ab2'/>
-###Adams-Bashforth of Order 2
-TO BE WRITTEN
+* ODE: $\frac{dy}{dx} = f(x,y)$ for $a \leq x \leq b$,
+* with initial condition $y(a) = y_0$.
+
+For this kind of differential equation [spitzy](https://github.com/agisga/spitzy.git) provides the class `Ode`, which currently has three methods, [Dormand-Prince](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method), [Forward Euler](http://en.wikipedia.org/wiki/Euler_method) and an [Adams-Bashforth](http://en.wikipedia.org/wiki/Linear_multistep_method) method of order 2.
 
 <div id='dopri'/>
 ###Dormand-Prince
-TO BE WRITTEN
+
+Dormand-Prince is a Runge-Kutta method that automatically performs an error estimation and adapts the step size accordingly in order to keep the error of the numerical solution below a pre specified tolerance level. It is widely agreed on to be the go-to method for most ordinary differential equations (e.g. see [Sha86]). For example it is currently the default in MATLAB's ode45 solver, which is suggested as the first method to try by the [MATLAB documentation](http://www.mathworks.com/help/matlab/ref/ode45.html#bti6n8p-45).
+
+#### Implementation
+
+The Dormand-Prince method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:dopri` when defining an `Ode` object.
+
+When we apply the Dormand-Prince method, we need to specify the range of $x$ values, the initial condition, the maximal step size that we don't want the method to exceed, and the function $f(x,y)$ (as a `Proc` object or a supplied block). Optionally, we can specify the tolerance level for the error of the obtained numerical solution (the default is 0.01), and the maximal number of iterations for the algorithm. Since Dormand-Prince adjusts the step sizes according to an error estimate, the algorithm might require multiple iterations to evaluate the solution at one step, that is, the algorithm will keep on carrying out iterations until it finds a suitable step size (thus opening the door to never ending loops).
+
+#### Examples
+
+Let's look at an example. We consider the initial value problem:
+
+* ODE: $\frac{dy}{dx} = 1 + \frac{y}{x} + \left(\frac{y}{x}\right)^2$, $1 \leq x \leq 4$,
+* IC: $y(1) = 0$.
+
+The following Ruby code computes a numerical solution to the above ODE using the Dormand-Prince method with a maximal step size of 0.1 in `spitzy`:
+
+```Ruby
+require 'spitzy'
+f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
+dopri_sol = Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, &f) 
+```
+
+If additionally we want to set the error tolerance to 1e-6 and the maximal number of performed iterations to 1e6, we can do:
+
+```Ruby
+dopri_sol = Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, 
+                    tol: 1e-6, maxiter: 1e6, &f) 
+```
+
+The exact solution to the ODE is $y(x) = x\tan(\log(x))$.
+We can now plot the obtained numerical solution and the exact solution with any Ruby visualization tool of our choice. Using the Ruby gem `gnuplot` we produce the figure shown below. One can clearly see that the Dormand-Prince solution agrees with the exact solution.
+
+![Dormand-Prince example plot](/images/dopri.png?raw=true "Dormand-Prince example plot")
+
+Using the exact solution, we can compute the error of the numerical solution. We can print further information about the obtained solution to the screen, using some of the attribute readers of `Ode`.
+
+![Dormand-Prince example output](/images/dopri_output.png?raw=true "Dormand-Prince example output")
+
+In particular, we see that the error of the numerical solution stays below the prescribed tolerance level, as intended.
+
+#### Example: Automatic step size adjustment
+
+We look at a second example that demonstrates the automatic step size adjustment capabilities of the Dormand-Prince method.
+Suppose we have the initial value problem:
+
+* ODE: $\frac{dy}{dx} = -2y + e^{-2(x-6)^2}$, $0 \leq x \leq 10$,
+* IC: $y(0) = 1$.
+
+We apply the Dormand-Prince method with error tolerance 1e-6:
+
+```Ruby
+f = proc { |t,y| -2.0 * y + Math::exp(-2.0 * (t - 6.0)**2) }
+dopri_sol = Ode.new(xrange: [0.0,10.0], dx: 1.5, yini: 1.0, 
+                    tol: 1e-6, maxiter: 1e6, &f) 
+```
+
+and plot the obtained solution on the grid generated by the method:
+
+![Dormand-Prince example 2 plot](/images/dopri2.png?raw=true "Dormand-Prince example 2 plot")
+
+One can clearly see that the step size decreases in regions of bigger change in the slope of the function.
+
+<div id='euler'/>
+###Forward Euler
+
+The forward Euler method is the most basic method for solving ordinary differential equations. It is a first-order Runge-Kutta method, given by the explicit formula
+$$u\subscript{n+1} = u\subscript{n} + h f(x\subscript{n}, u\subscript{n}),$$
+where $x\subscript{0}, x\subscript{1}, \ldots, x\subscript{N}$ are equally spaced grid points with spacing $h$ on the interval $[a,b]$.
+It is the most basic explicit method and often serves as a basis to construct more complex methods.
+
+#### Implementation
+
+The forward Euler method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:euler` when defining an `Ode` object.  When we apply the method, we need to specify the range of $x$ values, the initial condition, the step size for the $x$-grid, and the function $f(x,y)$ (as a `Proc` object or a supplied block).
+
+In its implementation in `spitzy`, unlike the Dormand-Prince method, the forward Euler method cannot automatically control the step size or estimate the error of the obtained numerical solution. 
+
+#### Examples
+
+We apply the Euler method to the same differential equation as in the Dormand-Prince example above, namely:
+
+* ODE: $\frac{dy}{dx} = 1 + \frac{y}{x} + \left(\frac{y}{x}\right)^2$, $1 \leq x \leq 4$,
+* IC: $y(1) = 0$.
+
+Using `spitzy` the following code computes the solution for this initial value problem.
+
+```Ruby
+f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
+euler_sol = Ode.new(xrange: [1.0,4.0], dx: 0.01,
+                    yini: 0.0, method: :euler, &f) 
+```
+
+If we plot the obtained numerical solution, we can see that, even though the Euler method evaluates the solution at a much finer grid, it performs much worse than the Dormand-Prince method.
+Nevertheless, there possibly are situations in which the simple Euler method is preferred over the rather complex Dormand-Prince.
+
+![Euler method example plot](/images/euler_plot.png?raw=true "Euler method example plot")
+
+
+<div id='ab2'/>
+### Second-Order Adams-Bashforth
+
+The Adams-Bashforth method implemented in `spitzy` is a second order method from the family of multi-step methods. 
+It is given by the explicit formula,
+$$u\subscript{n+1} = u\subscript{n} + \frac{h}{2}(3f(x\subscript{n},u\subscript{n}) - f(x\subscript{n-1},u\subscript{n-1})).$$
+One can derive this method by matching the Taylor expansions of the right- and the left-hand side of the equation
+$$\frac{y\subscript{n+1} - y\subscript{n}}{h} = b\subscript{0} f(x\subscript{n},y\subscript{n}) + b\subscript{1} f(x\subscript{n-1},y\subscript{n-1}).$$
+
+#### Implementation
+
+The second-order Adams-Bashforth method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:ab2` when defining an `Ode` object.
+As the Euler method, the Adams-Bashforth implementation in `spitzy` operates on a fixed pre specified step size, and takes as inputs the range of $x$ values, the initial condition, the step size for the $x$-grid, and the function $f(x,y)$ (as a `Proc` object or a supplied block).
+
+Since the Adams-Bashforth method requires the last two functional values for the approximation of the next functional value, and since only one initial value is given, we apply [Heun's method](http://en.wikipedia.org/wiki/Heun%27s_method) to approximate the functional value at the second time step. Heun's method is given by the following formula
+$$u\subscript{n+1} = u\subscript{n} + \frac{h}{2}(f(x\subscript{n},u\subscript{n}) + f(x\subscript{n+1}, u\subscript{n} + hf(x\subscript{n},u\subscript{n}))).$$
+Heun's method is a Runge-Kutta method of order 2 (e.g. see exercise 1 from section 11.12 in [GSS07]). Thus, one application of Heun's method does not reduce the order of the successive application of the Adam-Bashforth method of order 2. 
+ 
+#### Example
+
+We demonstrate the Adams-Bashforth method by solving the following differential equation:
+
+* ODE: $\frac{dy}{dx} = -2xy$, $0 \leq x \leq 4$,
+* IC: $y(0) = 1$.
+
+The implemented Adams-Bashforth scheme is a method of order two, which means that the error of the numerical solution is proportional to the square of the step size. Consequently, if we halve the step size, then the error of the numerical solution should reduce by a factor of four. We check this theoretical property by computing two solutions with step sizes 0.1 and 0.05, and comparing their errors (the exact solution is $y(x) = e^{-x^2}$. The following short code carries out the calculation, and its output is shown below.
+
+```Ruby
+require 'spitzy'
+
+f = proc { |t,y| -2.0*t*y }
+ab2_sol1 = Ode.new(xrange: [0.0,4.0], dx: 0.1, 
+                  yini: 1.0, method: :ab2, &f) 
+ab2_sol2 = Ode.new(xrange: [0.0,4.0], dx: 0.05, 
+                   yini: 1.0, method: :ab2, &f) 
+
+exact_sol1 = ab2_sol1.x.map { |tt| Math::exp(-(tt**2)) }
+maxerror1 = exact_sol1.each_with_index.map {|n,i| n - ab2_sol1.u[i] }.max.abs
+exact_sol2 = ab2_sol2.x.map { |tt| Math::exp(-(tt**2)) }
+maxerror2 = exact_sol2.each_with_index.map {|n,i| n - ab2_sol2.u[i] }.max.abs
+
+puts "Number of x steps: #{ab2_sol1.mx} and #{ab2_sol2.mx}"
+puts "Error: #{maxerror1} and #{maxerror2}"
+puts "Error ratio: #{maxerror1/maxerror2}"
+```
+
+![Adams-Bashforth example output](/images/ab2_output.png?raw=true "Adams-Bashforth example output")
+
+As expected the error ratio is close to 4.
+
+We also plot the numerical and the exact solutions.
+
+![Adams-Bashforth method example plot](/images/ab2_plot.png?raw=true "Adams-Bashforth method example plot")
+
+
 
 <div id='bvp'/>
 ##Two-point Boundary Value Problems
@@ -207,6 +358,8 @@ $$A\vec{u} = \vec{b},$$
 where $\vec{u} = (u\subscript{1,1}, u\subscript{2,1}, \ldots, u\subscript{m,1}, \ldots, u\subscript{1,k}, u\subscript{2,k}, \dots, u\subscript{m,k}, \dots, u\subscript{1,n}, u\subscript{2,n}, \dots, u\subscript{m,n})^T$, 
 the matrix $A$ is pentadiagonal with constant values along each (sub-/super-)diagonal, and the right hand side $\vec{b}$ consists of values $f(x\subscript{i,j})$ with the boundary condition $g(x\subscript{i,j})$ subtracted when necessary. For more detail on the construction of $\vec{u}$, $A$ and $\vec{b}$ we refer to the definition of `Bvp` in the `spitzy` code.
 
+It can be shown that the five-point Laplacian is a method of second order (see [Arn11]).
+
 #### Implementation
 
 The five-point Laplacian method is implemented in class `Poissons_eq` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). It takes as inputs the rectangular domain in form of a range in $x$-direction and a range in $y$-directions, the step size $h$, the Dirichlet boundary condition as a function of $x$ and $y$, and the right hand side function $f(x,y)$ (each function is passed as a `Proc` object, or as `Numeric` if the function is constant).
@@ -247,3 +400,4 @@ TO BE WRITTEN
 
 - [QSS07] A. Quarteroni, R. Sacco, F. Saleri (2007) *Numerical Mathematics*, 2nd ed., Texts in Applied Mathematics. Springer.
 - [Arn11] Douglas N. Arnold (2011) *Lecture notes on Numerical Analysis of Partial Differential Equations*, version of 2011-09-05. Lecture notes MATH 8445 Numerical Analysis of Differential Equations, University of Minnesota. <http://www.ima.umn.edu/~arnold//8445.f11/notes.pdf>
+- [Sha86] Lawrence F Shampine (1986) *Some practical Runge-Kutta formulas*. Math. Comput. 46, 173 (January 1986), 135-150. DOI=10.2307/2008219 http://dx.doi.org/10.2307/2008219 
