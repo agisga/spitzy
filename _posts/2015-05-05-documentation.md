@@ -57,13 +57,27 @@ For this kind of differential equation [spitzy](https://github.com/agisga/spitzy
 <div id='dopri'/>
 ###Dormand-Prince
 
-Dormand-Prince is a Runge-Kutta method that automatically performs an error estimation and adapts the step size accordingly in order to keep the error of the numerical solution below a pre specified tolerance level. It is widely agreed on to be the go-to method for most ordinary differential equations (e.g. see [Sha86]). For example it is currently the default in MATLAB's ode45 solver, which is suggested as the first method to try by the [MATLAB documentation](http://www.mathworks.com/help/matlab/ref/ode45.html#bti6n8p-45).
+Dormand-Prince (or DOPRI, or RKDP) is an explicit method for solving initial value problems that automatically performs an error estimation and adapts the step size accordingly in order to keep the error of the numerical solution below a pre specified tolerance level. It was first introduced by Dormand and Prince in [DP80].
+
+It is a member of the [Runge-Kutta](http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods) family of methods.
+In general, a Runge-Kutta method has the form
+$$u\subscript{n+1} = u\subscript{n} + h \sum\subscript{1}^s b\subscript{i}K\subscript{i},$$
+where each $K\subscript{i}$ is an evaluation of the right hand side $f$ of the ODE at a specifically defined input value (for more detail, see section 11.8 in [QSS07]), and $s$ is called the number of stages of the Runge-Kutta method.
+The Dormand-Prince method has seven stages, but due to clever computational tricks it uses only six function evaluations. The last evaluated stage of a step of the algorithm is the same function evaluation as the first stage of the next step of the algorithm.
+
+The Dormand-Prince method computes a fourth-order and a fifth-order approximations to the solution, and takes their difference as an estimate of the [local truncation error](http://en.wikipedia.org/wiki/Truncation_error_%28numerical_integration%29#Local_truncation_error) of the forth-order scheme. Consequently, the estimated error is compared to a pre specified tolerance, and depending on the outcome of this comparison the step size is adjusted. 
+
+The method owes its computational efficiency to the fact that the utilized forth-order and fifth-order schemes share the same values $K\subscript{i}$. 
+
+As the numerical solution $u\subscript{n+1}$, which initializes the numerical scheme at the time step $n+2$, the method uses the fifth-order approximation. So, the method is fifth-order, as a whole.
+
+Dormand-Prince is widely agreed on to be the go-to method for most ordinary differential equations (e.g. see [Sha86]). For example it is currently the default in MATLAB's ode45 solver, which is suggested as the first method to try by the [MATLAB documentation](http://www.mathworks.com/help/matlab/ref/ode45.html#bti6n8p-45).
 
 #### Implementation
 
 The Dormand-Prince method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:dopri` when defining an `Ode` object.
 
-When we apply the Dormand-Prince method, we need to specify the range of $x$ values, the initial condition, the maximal step size that we don't want the method to exceed, and the function $f(x,y)$ (as a `Proc` object or a supplied block). Optionally, we can specify the tolerance level for the error of the obtained numerical solution (the default is 0.01), and the maximal number of iterations for the algorithm. Since Dormand-Prince adjusts the step sizes according to an error estimate, the algorithm might require multiple iterations to evaluate the solution at one step, that is, the algorithm will keep on carrying out iterations until it finds a suitable step size (thus opening the door to never ending loops).
+When we apply the Dormand-Prince method, we need to specify the range of $x$ values, the initial condition, the maximal step size that we don't want the method to exceed, and the function $f(x,y)$ (as a `Proc` object or a supplied block). Optionally, we can specify the tolerance level for the error of the obtained numerical solution (the default is 0.01), and the maximal number of iterations for the algorithm (the default is 1e6). Since Dormand-Prince adjusts the step sizes according to an error estimate, the algorithm might require multiple iterations to evaluate the solution at one step, that is, the algorithm will keep on carrying out iterations until it finds a suitable step size (thus opening the door to never ending loops). That is the reason why the maximal number of iterations is a input parameter.
 
 #### Examples
 
@@ -171,7 +185,7 @@ As the Euler method, the Adams-Bashforth implementation in `spitzy` operates on 
 
 Since the Adams-Bashforth method requires the last two functional values for the approximation of the next functional value, and since only one initial value is given, we apply [Heun's method](http://en.wikipedia.org/wiki/Heun%27s_method) to approximate the functional value at the second time step. Heun's method is given by the following formula
 $$u\subscript{n+1} = u\subscript{n} + \frac{h}{2}(f(x\subscript{n},u\subscript{n}) + f(x\subscript{n+1}, u\subscript{n} + hf(x\subscript{n},u\subscript{n}))).$$
-Heun's method is a Runge-Kutta method of order 2 (e.g. see exercise 1 from section 11.12 in [GSS07]). Thus, one application of Heun's method does not reduce the order of the successive application of the Adam-Bashforth method of order 2. 
+Heun's method is a Runge-Kutta method of order 2 (e.g. see exercise 1 from section 11.12 in [QSS07]). Thus, one application of Heun's method does not reduce the order of the successive application of the Adam-Bashforth method of order 2. 
  
 #### Example
 
@@ -371,6 +385,49 @@ Since the matrix $A$ is pentadiagonal other methods can significantly improve th
 
 #### Examples
 
+We test the five-point Laplacian method on the following partial differential equation:
+
+* PDE: $\Delta u = e^{-\frac{x^2 + y^2}{2}} (x^2 + y^2 - 2)$,
+* on the rectangular domain $[-1,1]\times[-5,5]$,
+* with Dirichlet boundary conditions that agree with the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$.
+
+The numerical solution can be obtained with `spitzy` via the following three lines of code:
+
+```Ruby
+f = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) * (x**2.0 + y**2.0 - 2.0) }
+bc = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) }
+numsol = Poissons_eq.new(xrange: [-1.0,1.0], yrange: [-5.0, 5.0], h: 0.2, bc: bc, f: f)
+```
+
+We plot the numerical solution using the `gnuplot` Ruby gem, and the following code:
+
+```Ruby
+require 'gnuplot'
+Gnuplot.open do |gp|
+  Gnuplot::SPlot.new(gp) do |plot|
+    plot.title "Five-point Laplacian method example"
+    plot.xlabel "x"
+    plot.ylabel "y"
+    plot.zlabel "z"
+    x = numsol.x.flatten
+    y = numsol.y.flatten
+    u = u_num 
+    plot.data << Gnuplot::DataSet.new([x,y,u]) do |ds|
+      ds.with = "points"
+      ds.title = "Numerical Solution"
+    end
+  end
+end
+```
+
+The produced figure is shown below.
+
+![5-point Laplacian example figure](/images/five-pt_laplacian.png?raw=true "5-pt. Laplacian example figure")
+
+We have used a step size of 0.2 in the above. In order to verify experimentally the second order of convergence of the method we also compute a numerical solution using a stepsize of 0.1. Using the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$, we compute the maximal error of the numerical solution in both cases. Then we take the ratio of the two errors, which we expect to be close to $2^2$. The output of such a program is shown below and fulfills our expectations.
+
+![5-point Laplacian example output](/images/five-pt_laplacian_output.png?raw=true "5-pt. Laplacian example output")
+
 <div id='advection_eq'/>
 ##1D Linear Advection Equation
 TO BE WRITTEN
@@ -378,7 +435,7 @@ TO BE WRITTEN
 <div id='upwind'/>
 ### Upwind
 TO BE WRITTEN
- 
+
 <div id='leapfrog'/>
 ### Leapfrog
 TO BE WRITTEN
@@ -391,6 +448,40 @@ TO BE WRITTEN
 ### Lax-Wendroff
 TO BE WRITTEN
 
+### Examples
+
+We want to solve the 1D linear advection equation given as:
+
+  * PDE: $\frac{du}{dt} + a \frac{du}{dx} = 0$,
+  * on the domain: $0 < x < 1$ and $0 < t < 10$, 
+  * with periodic boundary consitions: $u(0,t) = u(1, t)$,
+  * with initial condition: $u(x,0) = \cos(2\pi x) + \frac{1}{5}\cos(10\pi x)$.
+
+We define and solve this equation using the Upwind scheme with time steps $dt = 0.95/1001$ and spatial steps $dx = 1/1001$ (i.e. on a grid of 1000 equally sized intervals in $x$). `AdvectionEq.new` lets the user specify the parameters such as length of the space and time steps, time and space domain, the initial condition, etc.
+
+```Ruby
+require 'spitzy'
+ic = proc { |x| Math::cos(2*Math::PI*x) + 0.2*Math::cos(10*Math::PI*x) }
+numsol = AdvectionEq.new(xrange: [0.0,1.0], trange: [0.0, 10.0], 
+                         dx: 1.0/1001, dt: 0.95/1001, a: 1.0,
+                         method: :upwind, &ic)
+```
+
+We can get the equation solved by `numsol` in form of a character string using the method `#equation`.
+
+There are four different numerical schemes available to solve the advection equation. Those are the Upwind, Leapfrog, Lax-Wendroff and Lax-Friedrichs methods. We can get which scheme was used by `numsol` with the attribute reader `#method`. Similarly we can access the number of $x$-steps `#mx` and $t$-steps `#mt`, as well as various other attributes.
+
+Using Fourier methods we compute the exact solution of the PDE to be $\cos(2\pi (x-t)) + 0.2\cos(10\pi (x-t))$. We can use it to check the accuracy of the numerical solution.
+
+Combined, the Ruby code produces the following output (the entire code is given at the end of this post).
+
+![Advection equation example output](/images/advection_equation_example_output.png?raw=true "Advection equation example output")
+
+Finally, we plot the computed numerical solution at different times using the *gnuplot* gem (the Ruby code is given below). We use the character string `numsol.equation` as a header for the plot. We can see a travelling wave as expected.
+
+![Advection equation example plot](/images/advection_equation_example_plot.png?raw=true "Advection equation example plot")
+
+
 <div id='conclusion'/>
 ##Conclusions and Future Work
 TO BE WRITTEN
@@ -399,5 +490,6 @@ TO BE WRITTEN
 ##References
 
 - [QSS07] A. Quarteroni, R. Sacco, F. Saleri (2007) *Numerical Mathematics*, 2nd ed., Texts in Applied Mathematics. Springer.
-- [Arn11] Douglas N. Arnold (2011) *Lecture notes on Numerical Analysis of Partial Differential Equations*, version of 2011-09-05. Lecture notes MATH 8445 Numerical Analysis of Differential Equations, University of Minnesota. <http://www.ima.umn.edu/~arnold//8445.f11/notes.pdf>
-- [Sha86] Lawrence F Shampine (1986) *Some practical Runge-Kutta formulas*. Math. Comput. 46, 173 (January 1986), 135-150. DOI=10.2307/2008219 http://dx.doi.org/10.2307/2008219 
+- [Arn11] D. N. Arnold (2011) *Lecture notes on Numerical Analysis of Partial Differential Equations*, version of 2011-09-05. Lecture notes MATH 8445 Numerical Analysis of Differential Equations, University of Minnesota. <http://www.ima.umn.edu/~arnold//8445.f11/notes.pdf>
+- [Sha86] L. F. Shampine (1986) *Some practical Runge-Kutta formulas*. Math. Comput. 46, 173 (January 1986), 135-150. DOI=10.2307/2008219 http://dx.doi.org/10.2307/2008219 
+- [DP80]  J. R. Dormand, P. J. Prince (1980), *A family of embedded Runge-Kutta formulae*, Journal of Computational and Applied Mathematics 6 (1): 19–26, doi:10.1016/0771-050X(80)90013-3.
