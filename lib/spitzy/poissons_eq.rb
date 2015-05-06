@@ -160,6 +160,7 @@ class Poissons_eq
       @rhs.reshape!([m_interior, 1])
 
       # Construct the matrix for the linear system
+      # TODO: the matrix is pentadiagonal (i.e. sparse) and should be stored accordingly
       @mat = NMatrix.new([m_interior, m_interior], dtype: :float64)
       (0..(m_interior-1)).each {|i| @mat[i,i] = -4.0 / h2 }
       (0...(m_interior-1)).each {|i| @mat[i,i+1] = 1.0 / h2 }
@@ -172,6 +173,8 @@ class Poissons_eq
       end
 
       # Compute the solution at the interior points
+      # TODO: @mat is pentadiagonal, and consequently, there are more
+      # efficient ways to solve the linear system (e.g. successive over-relaxation)
       u_interior = @mat.solve(@rhs)
       # x corresponds to columns, y corresponds to rows
       u = NMatrix.new([@mx,@my], dtype: :float64)

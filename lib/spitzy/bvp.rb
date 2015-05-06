@@ -59,6 +59,20 @@ class Bvp
   #
   # ==== Usage
   #
+  # # a,b,c and f are Numeric
+  # bvp_sol = Bvp.new(xrange: [0.0, 100.0], mx: 100, bc: [10.0, 0.00090799859], 
+  #                   a: 800.0*Math::PI, b: 0.0, c: 8.0*Math::PI, f: 0.0)
+  #
+  # # a,b,c and f are Proc objects
+  # a = Proc.new { |x| -Math::cos(x) }
+  # b = Proc.new { |x| Math::sin(x) }
+  # c = Proc.new { |x| Math::cos(x) }
+  # f = Proc.new { |x| -2.0*(Math::cos(x))**2 }
+  # xrange = [0.0, 10.0]
+  # bc = [0.0, (1.0 - 10.0) * Math::sin(10.0)]
+  # bvp_sol = Bvp.new(xrange: xrange, mx: 100, bc: bc, 
+  #                   a: a, b: b, c: c, f: f)
+  #
   def initialize(xrange:, mx:, bc:, method: :lin_fin_elt, a:, b:, c:, f:)
 
     raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2

@@ -5,10 +5,10 @@
 Spitzy is this cute pomeranian.
 Spitzy reads backwards as *yztips*, which translates into:
 
-***Y*our *Z*appy-*T*appy *I*nitial value *P*artial (and ordinary) differential equation *S*olver**
+***Y*our *Z*appy-*T*appy *I*nitial and boundary value *P*artial (and ordinary) differential equation *S*olver**
 
-Now, spitzy is also a ruby library in which I am building a comprehensive collection of numerical methods for differential equations, written in pure Ruby.
-To my knowledge, apart from an [interface with Fortran code](https://rubygems.org/gems/rb-daspk/versions/0.0.7-x86-mswin32-60), there currently does not exist another differential equation solver gem for Ruby.
+Now, spitzy is also a growing collection of numerical methods for differential equations, written in pure Ruby.
+To my knowledge, apart from an [interface with the DASPK Fortran library](https://rubygems.org/gems/rb-daspk/versions/0.0.7-x86-mswin32-60), there currently does not exist another differential equation solver gem for Ruby.
 
 <!--
 Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/spitzy`. To experiment with that code, run `bin/console` for an interactive prompt.
@@ -34,13 +34,18 @@ Or install it yourself as:
     $ gem install spitzy
 -->
 
-This will probably work:
+Currently the NMatrix gem needs to be installed in its development version (because `Poissons_eq` uses `#meshgrid`)
+ from <https://github.com/SciRuby/nmatrix.git>.
+
+Then this will probably work:
 
 ```
 git clone https://github.com/agisga/spitzy.git
 cd spitzy/
 rake install
 ```
+
+Feel free to contact me if you have any difficulties with the installation.
 
 ## Usage
 
