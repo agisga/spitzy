@@ -54,7 +54,7 @@ Feel free to contact me at alexej.go [at] googlemail.com, in case of difficultie
 
 * Slide show: <http://agisga.github.io/presentations/spitzy.html#/>
 
-*Blog posts about some of the implemented methods:
+* Blog posts about some of the implemented methods:
 
   - [Ordinary differential equations](http://agisga.github.io/ODE/)
 
