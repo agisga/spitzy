@@ -3,7 +3,7 @@ title: spitzy
 email: #alexej.go@googlemail.com
 description: > # this means to ignore newlines until "baseurl:"
   Solve differential equations in Ruby
-baseurl: "/spitzy" # the subpath of your site, e.g. /blog/
+baseurl: "/spitzy/" # the subpath of your site, e.g. /blog/
 url: #"http://yourdomain.com" # the base hostname & protocol for your site
 twitter_username: #jekyllrb
 github_username:  agisga
@@ -13,6 +13,7 @@ github_username:  agisga
 
 markdown: redcarpet
 highlighter: pygments
+permalink: title
 
 # The release of Jekyll Now that you're using
 version: v1.1.0
