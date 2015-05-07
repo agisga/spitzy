@@ -7,7 +7,7 @@ Spitzy reads backwards as *yztips*, which translates into:
 
 ***Y*our *Z*appy-*T*appy *I*nitial and boundary value *P*artial (and ordinary) differential equation *S*olver**
 
-Now, spitzy is also a growing collection of numerical methods for differential equations, written in pure Ruby.
+Now, spitzy is also a growing collection of numerical methods for differential equations, written in Ruby.
 To my knowledge, apart from an [interface with the DASPK Fortran library](https://rubygems.org/gems/rb-daspk/versions/0.0.7-x86-mswin32-60), there currently does not exist another differential equation solver gem for Ruby.
 
 <!--
@@ -34,10 +34,11 @@ Or install it yourself as:
     $ gem install spitzy
 -->
 
-Currently the NMatrix gem needs to be installed in its development version (because `Poissons_eq` uses `#meshgrid`)
+Ruby is required in version >=2.0 because keyword arguments are excessively used in `spitzy`.
+Moreover, prior to the installation of `spitzy`, currently the `NMatrix` gem needs to be installed in its development version (because `Poissons_eq` uses `#meshgrid`)
  from <https://github.com/SciRuby/nmatrix.git>.
 
-Then this will probably work:
+Then `spitzy` can be installed using the command line (or something similar):
 
 ```
 git clone https://github.com/agisga/spitzy.git
@@ -45,17 +46,22 @@ cd spitzy/
 rake install
 ```
 
-Feel free to contact me if you have any difficulties with the installation.
+Feel free to contact me at alexej.go [at] googlemail.com, in case of difficulties with the installation.
 
-## Usage
+## Documentation and Usage Examples
 
-* [Ordinary differential equations](http://agisga.github.io/ODE/)
+* Documentation: <http://agisga.github.io/spitzy/documentation/>
 
-* [Two point boundary value problem](http://agisga.github.io/BVP/)
+* Slide show: <http://agisga.github.io/presentations/spitzy.html#/>
 
-* [Advection equation](http://agisga.github.io/Advection-Equation/)
+*Blog posts about some of the implemented methods:
 
-* ....
+  - [Ordinary differential equations](http://agisga.github.io/ODE/)
+
+  - [Two point boundary value problem](http://agisga.github.io/BVP/)
+
+  - [Advection equation](http://agisga.github.io/Advection-Equation/)
+
 
 <!--
 ## Development
