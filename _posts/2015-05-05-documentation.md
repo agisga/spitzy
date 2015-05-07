@@ -28,9 +28,9 @@ date:   2015-05-05 13:10:08
 
   - [Upwind](#upwind)
 
-  - [Leapfrog](#leapfrog)
-
   - [Lax-Friedrichs](#lax_friedrichs)
+
+  - [Leapfrog](#leapfrog)
 
   - [Lax-Wendroff](#lax_wendroff)
 
@@ -455,7 +455,7 @@ depending on the sign of $a$. This is a first-order methods, as is clear by its 
 
 In order to ensure the stability of the method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
 $$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
-is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Upwind scheme we refer to [blabla].
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Upwind scheme we refer to [Rez11].
 
 <div id='lax_friedrichs'/>
 ### Lax-Friedrichs
@@ -469,7 +469,7 @@ $$\frac{u\subscript{i}^{n+1} - \frac{1}{2}(u\subscript{i+1}^n + u\subscript{i-1}
 
 As the Upwind method, in order to ensure the stability of the Lax-Friedrichs method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
 $$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
-is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Lax-Friedrichs scheme we refer to [blabla].
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Lax-Friedrichs scheme we refer to [Rez11].
 
 <div id='leapfrog'/>
 ### Leapfrog
@@ -486,7 +486,7 @@ $$u\subscript{j}^{n+1} = u\subscript{j}^{n-1} - a\frac{\Delta t}{\Delta x}(u\sub
 
 As the other methods, in order to ensure the stability of the Leapfrog method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
 $$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
-is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Leapfrog scheme we refer to [blabla].
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Leapfrog scheme we refer to [Rez11].
 
 #### Implementation Details
 
@@ -509,7 +509,7 @@ $$u\subscript{i}^{n+1} = u\subscript{i}^n -\frac{a\Delta t}{2\Delta x}\left(u\su
 
 As the other methods, in order to ensure the stability of the Lax-Wendroff method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
 $$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
-is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Lax-Wendroff scheme we refer to [blabla].
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Lax-Wendroff scheme we refer to [Rez11].
 
 ### Implementation
 
@@ -561,4 +561,6 @@ TO BE WRITTEN
 - [QSS07] A. Quarteroni, R. Sacco, F. Saleri (2007) *Numerical Mathematics*, 2nd ed., Texts in Applied Mathematics. Springer.
 - [Arn11] D. N. Arnold (2011) *Lecture notes on Numerical Analysis of Partial Differential Equations*, version of 2011-09-05. Lecture notes MATH 8445 Numerical Analysis of Differential Equations, University of Minnesota. <http://www.ima.umn.edu/~arnold//8445.f11/notes.pdf>
 - [Sha86] L. F. Shampine (1986) *Some practical Runge-Kutta formulas*. Math. Comput. 46, 173 (January 1986), 135-150. DOI=10.2307/2008219 http://dx.doi.org/10.2307/2008219 
-- [DP80]  J. R. Dormand, P. J. Prince (1980), *A family of embedded Runge-Kutta formulae*, Journal of Computational and Applied Mathematics 6 (1): 19–26, doi:10.1016/0771-050X(80)90013-3.
+- [DP80]  J. R. Dormand, P. J. Prince (1980) *A family of embedded Runge-Kutta formulae*, Journal of Computational and Applied Mathematics 6 (1): 19–26, doi:10.1016/0771-050X(80)90013-3.
+- [Rez11] L. Rezzolla (2011) *Numerical Methods for the Solution of Partial*, Lecture Notes for the COMPSTAR School on Computational Astrophysics, 8-13/02/10, Caen, France. <http://www.aei.mpg.de/~rezzolla/lnotes/Evolution_Pdes/evolution_pdes_lnotes.pdf>
+Differential Equations
