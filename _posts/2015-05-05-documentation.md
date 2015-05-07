@@ -422,31 +422,100 @@ end
 
 The produced figure is shown below.
 
-![Five-point Laplacian example figure](/images/fivept_laplacian.png?raw=true "5-pt. Laplacian example figure")
+![Five point Laplacian example figure](/images/fivept_laplacian.png?raw=true "5-pt. Laplacian example figure")
 
 We have used a step size of 0.2 in the above. In order to verify experimentally the second order of convergence of the method we also compute a numerical solution using a stepsize of 0.1. Using the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$, we compute the maximal error of the numerical solution in both cases. Then we take the ratio of the two errors, which we expect to be close to $2^2$. The output of such a program is shown below and fulfills our expectations.
 
-![Five-point Laplacian example output](/images/fivept_laplacian_output.png?raw=true "5-pt. Laplacian example output")
+![Five point Laplacian example output](/images/fivept_laplacian_output.png?raw=true "5-pt. Laplacian example output")
 
 <div id='advection_eq'/>
 ##1D Linear Advection Equation
-TO BE WRITTEN
+
+We consider the 1D linear advection equation of the general form:
+
+  * PDE: $\frac{du}{dt} + a \frac{du}{dx} = 0$,
+  * on the domain: $x\subscript{min} < x < x\subscript{max}$ and $t\subscript{min} < t < t\subscript{max}$, 
+  * with periodic boundary consitions: $u(x\subscript{min},t) = u(x\subscript{max},t)$,
+  * with initial condition: $u(x,t\subscript{min}) = g(x)$.
+
+The constant $a$ is called the advection velocity. Four different numerical schemes are available in `spitzy` to solve the advection equation. Those are the [Upwind](http://en.wikipedia.org/wiki/Upwind_scheme), Leapfrog, [Lax-Wendroff](http://en.wikipedia.org/wiki/Lax%E2%80%93Wendroff_method) and [Lax-Friedrichs](http://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method) methods.
 
 <div id='upwind'/>
 ### Upwind
-TO BE WRITTEN
 
-<div id='leapfrog'/>
-### Leapfrog
-TO BE WRITTEN
+The Upwind method stems from the approximation of both derivatives with first order finite differences. That is, depending on the sign of the advection velocity $a$, the finite difference representation of the PDE has the form:
+$$\frac{u\subscript{j}^{n+1} - u\subscript{j}^n}{\Delta t} = -a \frac{u\subscript{j}^{n} - u\subscript{j-1}^n}{\Delta x} + \mathcal{O}(\Delta t, \Delta x), \quad a>0,$$
+$$\frac{u\subscript{j}^{n+1} - u\subscript{j}^n}{\Delta t} = -a \frac{u\subscript{j+1}^{n} - u\subscript{j}^n}{\Delta x} + \mathcal{O}(\Delta t, \Delta x), \quad a<0,$$
+where $u\subscript{j}^n$ denotes the approximation to $u$ at the $j$th $x$-step and the $n$th time step, and where $\Delta x$ and $\Delta t$ denote the lengths of the corresponding time or space steps.
+
+Consequently, the Upwind scheme is given by the explicit formula:
+$$u\subscript{j}^{n+1} = u\subscript{j}^n -\frac{a\Delta t}{\Delta x}(u\subscript{j}^n - u\subscript{j-1}^n), \quad a > 0,$$
+$$u\subscript{j}^{n+1} = u\subscript{j}^n -\frac{a\Delta t}{\Delta x}(u\subscript{j+1}^n - u\subscript{j}^n), \quad a < 0,$$
+depending on the sign of $a$. This is a first-order methods, as is clear by its derivation.
+
+In order to ensure the stability of the method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
+$$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Upwind scheme we refer to [blabla].
 
 <div id='lax_friedrichs'/>
 ### Lax-Friedrichs
-TO BE WRITTEN
+
+The Lax-Friedrichs scheme is an explicit first-order method of the form:
+$$u\subscript{i}^{n+1} = \frac{1}{2}(u\subscript{i+1}^n + u\subscript{i-1}^n) - a\frac{\Delta t}{2\,\Delta x}(u\subscript{i+1}^n - u\subscript{i-1}^n),$$
+where, as before, $u\subscript{j}^n$ denotes the approximation to $u$ at the $j$th $x$-step and the $n$th time step, and where $\Delta x$ and $\Delta t$ denote the lengths of the corresponding time or space steps.
+
+It is derived from the following forward-in-time-centered-in-space representation of the PDE:
+$$\frac{u\subscript{i}^{n+1} - \frac{1}{2}(u\subscript{i+1}^n + u\subscript{i-1}^n)}{\Delta t} + a\frac{u\subscript{i+1}^n - u\subscript{i-1}^n}{2\,\Delta x} = 0.$$
+
+As the Upwind method, in order to ensure the stability of the Lax-Friedrichs method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
+$$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Lax-Friedrichs scheme we refer to [blabla].
+
+<div id='leapfrog'/>
+### Leapfrog
+
+The Lax-Friedrichs scheme, introduced above, is based on a first-order approximation for the time derivative and a second-order approximation for the spatial
+derivative. Thus, in order to achieve the desired accuracy, $a\Delta t$ needs to be chosen significantly smaller than $\Delta x$, well below the limit imposed by the CFL condition.
+
+The Leapfrog method achievs a second-order accuracy in time by using the centered difference
+$$\frac{du}{dt} = \frac{u\subscript{j}^{n+1} - u\subscript{j}^{n-1}}{2 \Delta t} + \mathcal{O}(\Delta t^2)$$
+in time, and the same centered difference in space as used by the Lax-Friedrichs method.
+
+The resulting Leapfrog scheme, which is second-order in time and space, is
+$$u\subscript{j}^{n+1} = u\subscript{j}^{n-1} - a\frac{\Delta t}{\Delta x}(u\subscript{j+1}^n - u\subscript{j-1}^n).$$
+
+As the other methods, in order to ensure the stability of the Leapfrog method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
+$$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Leapfrog scheme we refer to [blabla].
+
+#### Implementation Details
+
+Note that the Leapfrog scheme is a two-level scheme, requiring records of values at time steps $n$ and $n−1$ to get values at time step $n+1$.
+Thus, the solution at the second time step must be computed with a different method in order to initialize the Leapfrog scheme. In the current implementation of `spitzy` the Lax-Wendroff scheme is used to initialize the Leapfrog. Such an implementation of the Leapfrog method yields second-order accuracy as a whole, because both, Lax-Wendroff and Leapfrog, are second-order schemes. 
 
 <div id='lax_wendroff'/>
 ### Lax-Wendroff
-TO BE WRITTEN
+
+The Lax-Wendroff scheme is an explicit method which is second-order accurate in time and space.
+It can be regarded as an extension of the Lax-Friedrichs method. The basic idea in its derivation is to use Lax-Friedrichs evaluations at half steps $t\subscript{n+1/2}$ and $x\subscript{n+1/2}$:
+$$u\subscript{i+1/2}^{n+1/2} = \frac{1}{2}(u\subscript{i+1}^n + u\subscript{i}^n) - \frac{\Delta t}{2\,\Delta x}( f( u\subscript{i+1}^n ) - f( u\subscript{i}^n ) ),$$
+$$u\subscript{i-1/2}^{n+1/2} = \frac{1}{2}(u\subscript{i}^n + u\subscript{i-1}^n) - \frac{\Delta t}{2\,\Delta x}( f( u\subscript{i}^n ) - f( u\subscript{i-1}^n ) ),$$
+followed by a Leapfrog "half step":
+$$u\subscript{i}^{n+1} = u\subscript{i}^n - \frac{\Delta t}{\Delta x} \left( f(u\subscript{i+1/2}^{n+1/2}) - f(u\subscript{i-1/2}^{n+1/2}) \right).$$
+
+Even though the Lax-Wendroff method is technically a two-level scheme, requiring records of values at time steps $n$ and $n+1/2$ to get values at time step $n+1$,
+it can be algebraically reformulated into the one-level form:
+$$u\subscript{i}^{n+1} = u\subscript{i}^n -\frac{a\Delta t}{2\Delta x}\left(u\subscript{i+1}^n-u\subscript{i-1}^n\right) + \frac{a^2\Delta t^2}{2\Delta x^2}\left(u\subscript{i+1}^n-2u\subscript{i}^n+u\subscript{i-1}^n\right).$$ 
+
+As the other methods, in order to ensure the stability of the Lax-Wendroff method (meaning that the solution will not have exponentially growing modes), the step sizes $\Delta x$ and $\Delta t$ should be chosen such that the so-called [CFL (Courant-Friedrichs-Lewy) condition](http://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition)
+$$\left| \frac{a\Delta t}{\Delta x} \right| \leq 1$$
+is satisfied. This can be shown via von Neumann stability analysis. For a rigorous derivation of this and other properties of the Lax-Wendroff scheme we refer to [blabla].
+
+### Implementation
+
+The Upwind, Lax-Friedrichs, Leapfrog and Lax-Wendroff methods are implemented in class `Advection_eq` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). The required inputs are the advection speed $a$, the space and time domains (both as intervals represented by arrays of length two in Ruby), the space and time step sizes, and the initial condition as a function of $x$ passed as a `Proc` object or a block.
+
+An `Advection_eq` object has various attributes that we can access. In particular, the numerical solution `#u` is saved as an array of arrays, where the $i$th array contains the values of the solution on the spacial grid at the $i$th time step.
 
 ### Examples
 

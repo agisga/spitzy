@@ -2,7 +2,7 @@
 title: spitzy
 email: #alexej.go@googlemail.com
 description: > # this means to ignore newlines until "baseurl:"
-  Solve differential equations in pure Ruby
+  Solve differential equations in Ruby
 baseurl: "/spitzy" # the subpath of your site, e.g. /blog/
 url: #"http://yourdomain.com" # the base hostname & protocol for your site
 twitter_username: #jekyllrb
