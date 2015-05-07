@@ -336,7 +336,7 @@ $$u(x) = (1-x)\sin(x).$$
 
 Again, we plot both, the numerical and the exact solution, and observe that they approximately agree.
 
-![BVP example 2 plot](/images/fivept_laplacian.png?raw=true "BVP example 2 plot")
+![BVP example 2 plot](/images/bvp2.png?raw=true "BVP example 2 plot")
 
 <div id='poissons_eq'/>
 ##2D Poisson's Equation
