@@ -426,7 +426,7 @@ The produced figure is shown below.
 
 We have used a step size of 0.2 in the above. In order to verify experimentally the second order of convergence of the method we also compute a numerical solution using a stepsize of 0.1. Using the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$, we compute the maximal error of the numerical solution in both cases. Then we take the ratio of the two errors, which we expect to be close to $2^2$. The output of such a program is shown below and fulfills our expectations.
 
-![Five point Laplacian example output](/images/fivept_laplacian_output.png?raw=true "fivept_laplacian_output.png")
+![Five point Laplacian example output](/images/advection_equation_example_plot.png?raw=true "fivept_laplacian_output.png")
 
 <div id='advection_eq'/>
 ##1D Linear Advection Equation
