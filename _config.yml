@@ -22,10 +22,6 @@ version: v1.1.0
 gems:
   - jekyll-sitemap # Create a sitemap using the official Jekyll sitemap gem
     
-# Force-include these files in your production _site
-include:
-  - images
-
 # Exclude these files from your production _site
 exclude:
     - Gemfile
