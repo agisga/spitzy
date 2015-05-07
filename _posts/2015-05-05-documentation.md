@@ -1,12 +1,26 @@
 ---
 layout: post
-title:  "Documentation"
-date:   2015-05-05 13:10:08
+title:  "Documentation (version: 2015-05-07)"
+date:   2015-05-07 09:30:00
 ---
+
+-------------------------------------
+# Abstract
+
+The Ruby gem [spitzy](https://github.com/agisga/spitzy.git) is a collection of methods for differential equations written in Ruby.
+Apart from an [interface with the DASPK Fortran library](https://rubygems.org/gems/rb-daspk/versions/0.0.7-x86-mswin32-60) there currently does not seem to exist another differential equation solver gem for Ruby.
+Currently, in its early development phase, *spitzy* has multiple methods to solve initial and boundary value ODEs, 2D Poisson's equation and the 1D advection equation.
+We present all currently implemented numerical schemes, their underlying theory and implementation details, as well as usage examples. 
+
+-------------------------------------
 
 # Table of Contents
 
 * [Introduction](#introduction)
+
+  - [Origin of the Name](#name)
+
+  - [Installation](#name)
 
 * [Initial Value Problems](#ivp)
 
@@ -42,7 +56,39 @@ date:   2015-05-05 13:10:08
 
 <div id='introduction'/>
 ##Introduction
-TO BE WRITTEN
+
+Under the project name *spitzy*, we are developing a collection of methods for differential equations written in the programming language [Ruby](https://www.ruby-lang.org). The idea to develop a Ruby differential equations library has its origin in the fact that apart from an [interface with the DASPK Fortran library](https://rubygems.org/gems/rb-daspk/versions/0.0.7-x86-mswin32-60) there currently does not seem to exist another differential equation solver gem for Ruby, even though a feature rich linear algebra library is available with [NMatrix](https://github.com/SciRuby/nmatrix.git) and a number of Ruby tools for scientific computing and visualisation are under active development by the [Ruby Science Foundation (or SciRuby)](http://sciruby.com).
+
+Currently *spitzy* includes the methods Dormand-Prince, forward Euler and second-order Adams-Bashforth for initial value problems, the numerical schemes Upwind, Lax-Friedrichs, Leapfrog and Lax-Wendroff for the one-dimensional linear advection equation, the five-point Laplacian method for the two-dimensional Poisson's equation, and the linear finite element Galerkin method for two-point boundary value problems.
+
+In the following, we introduce the types of differential equations covered by the currently implemented methods, and present usage examples for the methods, as well as the underlying theory and implementation details.
+
+<div id='name'/>
+### Origin of the Name
+
+![Spitzy](/spitzy/images/spitzy_small.jpg?raw=true "spitzy_small.jpg")
+
+Spitzy is this cute Pomeranian.
+Spitzy reads backwards as ***YZTIPS***, which translates into:
+
+***Y*our *Z*appy-*T*appy *I*nitial and boundary value *P*artial (and ordinary) differential equation *S*olver**
+
+<div id='installation'/>
+### Installation
+
+Ruby is required in version greater than or equal to 2.0 because keyword arguments are excessively used in `spitzy`.
+Moreover, prior to the installation of `spitzy`, currently the `NMatrix` gem needs to be installed in its development version (because `Poissons_eq` uses `#meshgrid`)
+ from <https://github.com/SciRuby/nmatrix.git>.
+
+Then `spitzy` can be installed using the command line:
+
+```
+git clone https://github.com/agisga/spitzy.git
+cd spitzy/
+rake install
+```
+
+Feel free to contact the author at alexej.go [at] googlemail.com, in case of difficulties with the installation.
 
 <div id='ivp'/>
 ##Initial Value Problems
@@ -262,7 +308,7 @@ $$a\subscript{ij} = \underset{[a,b]}{\int} \alpha \phi\subscript{i}' \phi\subscr
 and the right hand side vector $\vec{f}$ has entries
 $$f\subscript{i} = \underset{[a,b]}{\int} \alpha f' \phi\subscript{i}' dx + \underset{[a,b]}{\int} \beta f' \phi\subscript{i} dx + \underset{[a,b]}{\int} \gamma f \phi\subscript{i} dx.$$
 
-The structure of $A$ and the degree of accuracy of the numerical solution depends on the form of the basis functions $\phi\subscript{1}, \phi\subscript{2}, \ldots, \phi\subscript{N}$, that is, on the choice of $V\subscript{h}$.
+The structure of $A$ and the degree of accuracy of the numerical solution depend on the form of the basis functions $\phi\subscript{1}, \phi\subscript{2}, \ldots, \phi\subscript{N}$, that is, on the choice of $V\subscript{h}$.
 
 #### Finite Element Method
 
@@ -347,7 +393,7 @@ Poisson's equation is the elliptic boundary value problem:
 * with the boundary condition: $u=g$ on $\partial \Omega$.
 
 Here we only consider the 2-dimensional version of Poisson's problem, where $\Delta u = \frac{d^2 u}{dx^2} + \frac{d^2 u}{dy^2}$.
-We can discretise Poisson's equation by defining a mesh over the domain $\Omega$. If we denote by $\Omega\subscript{h}$ the set of the interior mesh points and by $\Gamma\subscript{h}$ the set of boundary mesh points, then the numerical solution needs to satisfy the discrete version of Poisson's problem written as:
+We can discretized Poisson's equation by defining a mesh over the domain $\Omega$. If we denote by $\Omega\subscript{h}$ the set of the interior mesh points and by $\Gamma\subscript{h}$ the set of boundary mesh points, then the numerical solution needs to satisfy the discrete version of Poisson's problem written as:
 
 * $\Delta\subscript{h} u = f$ in $\Omega\subscript{h}$,
 * with the Dirichlet boundary condition: $u=g$ on $\Gamma\subscript{h}$.
@@ -378,7 +424,7 @@ It can be shown that the five-point Laplacian is a method of second order (see [
 
 The five-point Laplacian method is implemented in class `Poissons_eq` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). It takes as inputs the rectangular domain in form of a range in $x$-direction and a range in $y$-directions, the step size $h$, the Dirichlet boundary condition as a function of $x$ and $y$, and the right hand side function $f(x,y)$ (each function is passed as a `Proc` object, or as `Numeric` if the function is constant).
 
-A mesh grid is generated with the method `#meshgrid` from the `NMatrix` gem. Currently this method is available only in the developement version of `NMatrix`.
+A mesh grid is generated with the method `#meshgrid` from the `NMatrix` gem. Currently this method is available only in the development version of `NMatrix`.
 
 Currently, the Ruby implementation in `spitzy` uses the `#solve` method from the `NMatrix` gem to solve the linear system.
 Since the matrix $A$ is pentadiagonal other methods can significantly improve the computational speed as well as the memory usage. It would be straight forward to implement a modified [successive over-relaxation](http://en.wikipedia.org/wiki/Successive_over-relaxation) method, which would only perform multiplications corresponding to the non-zero elements of $A$ (it would even be unnecessary to save the matrix at all, because all entries of $A$ are either $-4/h^2$, $1/h^2$ or $0$). However, such a method should probably be implemented in C, because it is questionable if it would beat `NMatrix`'s `#solve` method (which is written in C) otherwise.
@@ -424,7 +470,7 @@ The produced figure is shown below.
 
 ![Five point Laplacian example figure](/spitzy/images/five-pt_laplacian.png?raw=true "five-pt_laplacian.png")
 
-We have used a step size of 0.2 in the above. In order to verify experimentally the second order of convergence of the method we also compute a numerical solution using a stepsize of 0.1. Using the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$, we compute the maximal error of the numerical solution in both cases. Then we take the ratio of the two errors, which we expect to be close to $2^2$. The output of such a program is shown below and fulfills our expectations.
+We have used a step size of 0.2 in the above. In order to verify experimentally the second order of convergence of the method we also compute a numerical solution using a step size of 0.1. Using the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$, we compute the maximal error of the numerical solution in both cases. Then we take the ratio of the two errors, which we expect to be close to $2^2$. The output of such a program is shown below and fulfills our expectations.
 
 ![Five point Laplacian example output](/spitzy/images/five-pt_laplacian_output.png?raw=true "five-pt_laplacian_output.png")
 
@@ -477,7 +523,7 @@ is satisfied. This can be shown via von Neumann stability analysis. For a rigoro
 The Lax-Friedrichs scheme, introduced above, is based on a first-order approximation for the time derivative and a second-order approximation for the spatial
 derivative. Thus, in order to achieve the desired accuracy, $a\Delta t$ needs to be chosen significantly smaller than $\Delta x$, well below the limit imposed by the CFL condition.
 
-The Leapfrog method achievs a second-order accuracy in time by using the centered difference
+The Leapfrog method achieves a second-order accuracy in time by using the centered difference
 $$\frac{du}{dt} = \frac{u\subscript{j}^{n+1} - u\subscript{j}^{n-1}}{2 \Delta t} + \mathcal{O}(\Delta t^2)$$
 in time, and the same centered difference in space as used by the Lax-Friedrichs method.
 
@@ -523,7 +569,7 @@ We want to solve the 1D linear advection equation given as:
 
   * PDE: $\frac{du}{dt} + a \frac{du}{dx} = 0$,
   * on the domain: $0 < x < 1$ and $0 < t < 10$, 
-  * with periodic boundary consitions: $u(0,t) = u(1, t)$,
+  * with periodic boundary conditions: $u(0,t) = u(1, t)$,
   * with initial condition: $u(x,0) = \cos(2\pi x) + \frac{1}{5}\cos(10\pi x)$.
 
 We define and solve this equation using the Upwind scheme with time steps $dt = 0.95/1001$ and spatial steps $dx = 1/1001$ (i.e. on a grid of 1000 equally sized intervals in $x$). `AdvectionEq.new` lets the user specify the parameters such as length of the space and time steps, time and space domain, the initial condition, etc.
@@ -553,7 +599,15 @@ Finally, we plot the computed numerical solution at different times using the *g
 
 <div id='conclusion'/>
 ##Conclusions and Future Work
-TO BE WRITTEN
+
+We have introduced all methods currently implemented in the Ruby gem `spitzy`. We have shown many usage examples, and we have briefly introduced the theoretical basis for each method as well as the underlying differential equations. We have also discussed implementation specifics for all of the numerical schemes. We have seen that some of the methods could not be implemented to be as efficient as they can be, because the numerical linear algebra Ruby gem `NMatrix` is not as mature yet as other linear algebra libraries for programming languages more commonly used in the scientific community (such as Python or C++). However, the required linear algebra algorithms are currently under active development, and can be incorporated in `spitzy` in the near future. For example, the `#tridiagonal_solve` method is implemented already but not merged to the `NMatrix` project yet (as of 2015/05/07).
+
+Since there is a lack of scientific libraries in general and differential equation solvers in particular for Ruby, `spitzy` seems to be a project worth extending.
+In the immediate future, we need to implement automated test for all numerical methods currently included in `spitzy`.
+Then, more work can be done on the implementation of additional numerical schemes, as well as on the improvement of some of the available methods.
+Eventually, it is highly desirable to set up interfaces to publicly available advanced and well-tested numerical codes, written in C or FORTRAN, such as the ones available from the public repositories [GAMS](http://gams.nist.gov/) or [NETLIB](www.netlib.org).
+
+The author enjoyed it a lot to work on this project, and learned in the process much about open source software development in general, as well as software development in Ruby specifically. Contributions to [spitzy](https://github.com/agisga/spitzy.git) are very welcome!
 
 <div id='references'/>
 ##References
@@ -562,5 +616,4 @@ TO BE WRITTEN
 - [Arn11] D. N. Arnold (2011) *Lecture notes on Numerical Analysis of Partial Differential Equations*, version of 2011-09-05. Lecture notes MATH 8445 Numerical Analysis of Differential Equations, University of Minnesota. <http://www.ima.umn.edu/~arnold//8445.f11/notes.pdf>
 - [Sha86] L. F. Shampine (1986) *Some practical Runge-Kutta formulas*. Math. Comput. 46, 173 (January 1986), 135-150. DOI=10.2307/2008219 http://dx.doi.org/10.2307/2008219 
 - [DP80]  J. R. Dormand, P. J. Prince (1980) *A family of embedded Runge-Kutta formulae*, Journal of Computational and Applied Mathematics 6 (1): 19–26, doi:10.1016/0771-050X(80)90013-3.
-- [Rez11] L. Rezzolla (2011) *Numerical Methods for the Solution of Partial*, Lecture Notes for the COMPSTAR School on Computational Astrophysics, 8-13/02/10, Caen, France. <http://www.aei.mpg.de/~rezzolla/lnotes/Evolution_Pdes/evolution_pdes_lnotes.pdf>
-Differential Equations
+- [Rez11] L. Rezzolla (2011) *Numerical Methods for the Solution of Partial Differential Equations*, Lecture Notes for the COMPSTAR School on Computational Astrophysics, 8-13/02/10, Caen, France. <http://www.aei.mpg.de/~rezzolla/lnotes/Evolution_Pdes/evolution_pdes_lnotes.pdf>
