@@ -318,7 +318,6 @@ Here, we only consider polynomials of degree 1, that is, continuous piecewise li
 Given an equally spaced grid $a = x\subscript{0} < x\subscript{1} < \ldots < x\subscript{n-1} < x\subscript{n} = b$, define for $i=1,2,\ldots,n-1$ the function $\phi\subscript{i}$ to be the continuous piecewise linear function that is equal to 1 at the node $x\subscript{i}$ and 0 at all other nodes. Thus, the basis functions have the following shape (the red line represents a linear combination of the basis functions):
 
 ![Piecewise linear basis functions](/spitzy/images/fin_elt_basis_func.svg?raw=true "Piecewise linear basis functions")
-
 <cite>"<a href="http://commons.wikimedia.org/wiki/File:Finite_element_method_1D_illustration2.svg#/media/File:Finite_element_method_1D_illustration2.svg">Finite element method 1D illustration2</a>" by <a href="//commons.wikimedia.org/wiki/User:Krishnavedala" title="User:Krishnavedala">Krishnavedala</a> - <span class="int-own-work" lang="en">Own work</span>. Licensed under <a title="Creative Commons Attribution-Share Alike 3.0" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY-SA 3.0</a> via <a href="//commons.wikimedia.org/wiki/">Wikimedia Commons</a>.
 
 #### Implementation
@@ -459,7 +458,7 @@ Gnuplot.open do |gp|
     plot.zlabel "z"
     x = numsol.x.flatten
     y = numsol.y.flatten
-    u = u_num 
+    u = numsol.u.flatten
     plot.data << Gnuplot::DataSet.new([x,y,u]) do |ds|
       ds.with = "points"
       ds.title = "Numerical Solution"
