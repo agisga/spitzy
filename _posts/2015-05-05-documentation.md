@@ -315,9 +315,11 @@ The structure of $A$ and the degree of accuracy of the numerical solution depend
 The [finite element method](http://en.wikipedia.org/wiki/Finite_element_method) chooses $V_h$ to be the space of continuous piecewise polynomials which are defined on subintervals of $[a, b]$ and vanish at $a$ and $b$.
 
 Here, we only consider polynomials of degree 1, that is, continuous piecewise linear functions.
-Given an equally spaced grid $a = x\subscript{0} < x\subscript{1} < \ldots < x\subscript{n-1} < x\subscript{n} = b$, define for $i=1,2,\ldots,n-1$ the function $\phi\subscript{i}$ to be the continuous piecewise linear function that is equal to 1 at the node $x\subscript{i}$ and 0 at all other nodes. Thus, the basis functions have the following shape (image from a [wikipedia article](http://en.wikipedia.org/wiki/Finite_element_method), the red line represents a linear combination of the basis functions):
+Given an equally spaced grid $a = x\subscript{0} < x\subscript{1} < \ldots < x\subscript{n-1} < x\subscript{n} = b$, define for $i=1,2,\ldots,n-1$ the function $\phi\subscript{i}$ to be the continuous piecewise linear function that is equal to 1 at the node $x\subscript{i}$ and 0 at all other nodes. Thus, the basis functions have the following shape (the red line represents a linear combination of the basis functions):
 
 ![Piecewise linear basis functions](/spitzy/images/fin_elt_basis_func.svg?raw=true "Piecewise linear basis functions")
+
+<cite>"<a href="http://commons.wikimedia.org/wiki/File:Finite_element_method_1D_illustration2.svg#/media/File:Finite_element_method_1D_illustration2.svg">Finite element method 1D illustration2</a>" by <a href="//commons.wikimedia.org/wiki/User:Krishnavedala" title="User:Krishnavedala">Krishnavedala</a> - <span class="int-own-work" lang="en">Own work</span>. Licensed under <a title="Creative Commons Attribution-Share Alike 3.0" href="http://creativecommons.org/licenses/by-sa/3.0">CC BY-SA 3.0</a> via <a href="//commons.wikimedia.org/wiki/">Wikimedia Commons</a>.
 
 #### Implementation
 
