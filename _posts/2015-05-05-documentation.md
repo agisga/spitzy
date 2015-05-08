@@ -411,7 +411,7 @@ For more detail on the above and an introduction to various numerical methods fo
 In the current implementation of the five-point Laplacian method we assume a rectangular domain, i.e. $\Omega = [a,b]\times[c,d]$, and that each side of the domain is subdivided into subintervals of the same length $h$.
 
 Under such conditions the following approximation to the Laplacian operator can be used
-$$\Delta\subscript{h} u\subscript{i,j} = \frac{1}{h^2} (4u\subscript{i,j} - u\subscript{i+1,j} - u\subscript{i-1,j} - u\subscript{i,j+1} - u\subscript{i,j-1}),$$
+$$\Delta\subscript{h} u\subscript{i,j} = -\frac{1}{h^2} (4u\subscript{i,j} - u\subscript{i+1,j} - u\subscript{i-1,j} - u\subscript{i,j+1} - u\subscript{i,j-1}),$$
 where $x\subscript{i,j}$ denotes the point in the discretization $\Omega\subscript{h}$ corresponding to the $i$th coordinate in $x$-direction and the $j$th coordinate in $y$-direction, and $u\subscript{i,j}$ is an approximation to the true solution $u(x\subscript{i,j})$. After a moment of reflection it is clear that this amounts to the [second-order centered discretization of the second derivative](http://en.wikipedia.org/wiki/Finite_difference#Higher-order_differences) in both, the $x$- and the $y$-directions.
 
 It is an easy exercise to see that this problem reduces to the linear system
