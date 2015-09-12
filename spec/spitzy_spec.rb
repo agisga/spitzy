@@ -73,4 +73,36 @@ describe Spitzy do
       end 
     end
   end
+
+  describe Spitzy::Ode do
+
+    #  solve the following initial value ODE:
+    #  * ODE: y' = -2xy, 0 <= x <= 4,
+    #  * IC: y(0) = 1
+    #
+    #  The exact solution is y = exp(-x^2)
+
+    [:dopri, :euler, :ab2].each do |mthd|
+      context "when method: #{mthd}" do
+        let(:tol) { 0.1 }
+
+        subject(:numsol) do
+          f = proc { |t,y| -2.0*t*y }
+          Spitzy::Ode.new(xrange: [0.0,4.0], dx: 0.1, tol: tol,
+                          yini: 1.0, method: mthd, &f)
+        end
+
+        it "reports the utilized method" do
+          expect(numsol.method).to eq(mthd)
+        end
+
+        it "computes a precise numerical solution" do
+          exact_sol = numsol.x.map { |tt| Math::exp(-(tt**2)) }
+          maxerror = exact_sol.each_with_index.map {|n,i| (n - numsol.u[i]).abs }.max
+
+          expect(maxerror).to be_within(tol).of(0.0)
+        end
+      end 
+    end
+  end
 end
