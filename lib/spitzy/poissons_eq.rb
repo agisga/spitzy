@@ -8,7 +8,7 @@ module Spitzy
   # * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
   #   (x,y) is on the boundary of the rectangular domain. 
   #
-  class Poissons_eq
+  class PoissonsEq
 
     # array of the x coordinates of points in the domain at which the numerical solution was evaluated
     attr_reader :x
@@ -63,6 +63,12 @@ module Spitzy
     # * +f+       - A +Proc+ or +Numeric+ object. The right hand side f(x,y) of the differential 
     #   equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
     #   supplied then f(x,y) is assumed to be constant equal to that number.
+    #
+    # === Usage
+    #
+    #    f = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) * (x**2.0 + y**2.0 - 2.0) }
+    #    bc = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) }
+    #    numsol = Spitzy::PoissonsEq.new(xrange: [-1.0,1.0], yrange: [-5.0, 5.0], h: 0.2, bc: bc, f: f)
     #
     def initialize(xrange:, yrange:, h:, method: :five_pt, bc:, f:)
       raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2
