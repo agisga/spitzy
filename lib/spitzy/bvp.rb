@@ -234,7 +234,7 @@ module Spitzy
         # Solve the system
         # TODO: The system is tridiagonal and should be solved accordingly
         w = @mat.solve(@rhs)
-        @u = w.to_a
+        @u = w.to_flat_a
         @u.insert(0, @bc[0])
         @u.insert(-1, @bc[1])
       end

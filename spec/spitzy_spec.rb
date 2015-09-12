@@ -42,4 +42,35 @@ describe Spitzy do
       end 
     end
   end
+
+  describe Spitzy::Bvp do
+
+    #  solve the following boundary value ODE:
+    #  * ODE: -800\pi u'' + 8\pi u = 0, 0 < x < 100
+    #  * BC: u(0) = 10, u(100) = \frac{10}{\cosh(10)}
+
+    [:lin_fin_elt].each do |mthd|
+      context "when method: #{mthd}" do
+        subject(:numsol) do
+          Spitzy::Bvp.new(xrange: [0.0, 100.0], mx: 100, bc: [10.0, 0.00090799859], 
+                          a: 800.0*Math::PI, b: 0.0, c: 8.0*Math::PI, f: 0.0, method: mthd)
+        end
+
+        it "reports the utilized method" do
+          expect(numsol.method).to eq(mthd)
+        end
+
+        it "computes a precise numerical solution" do
+          exactsol = proc { |x| 10.0 * Math::cosh((100.0 - x)/10.0) / Math::cosh(10.0) }
+          u_exact = []
+          numsol.x.each { |x| u_exact << exactsol.call(x) }
+          error = []
+          numsol.u.each_with_index { |pt, i| error << (pt - u_exact[i]).abs }
+          maxerror = error.max
+
+          expect(maxerror).to be_within(0.1).of(0.0)
+        end
+      end 
+    end
+  end
 end
