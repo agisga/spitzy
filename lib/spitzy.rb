@@ -3,6 +3,7 @@
 require "spitzy/version"
 
 require "nmatrix"
+require 'nmatrix/lapack_plugin'
 
 module Spitzy
   require "spitzy/advection_eq.rb"

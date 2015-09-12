@@ -6,7 +6,7 @@ require 'spitzy/version'
 Gem::Specification.new do |spec|
   spec.name          = "spitzy"
   spec.version       = Spitzy::VERSION
-  spec.authors       = ["agisga"]
+  spec.authors       = ["Alexej Gossmann"]
   spec.email         = ["alexej.go@googlemail.com"]
 
   spec.summary       = %q{Solve differential equations in pure Ruby.}
@@ -19,16 +19,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
-  end
-
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.2"
 
-  spec.add_dependency "nmatrix"
+  spec.add_runtime_dependency "nmatrix", "~> 0.2.0"
+  spec.add_runtime_dependency "nmatrix-lapacke", "~> 0.2.0"
 
-  # This gem will work with 2.0 or greater...
-  spec.required_ruby_version = '>= 2.0'
+  # This gem will work with Ruby 2.1 or newer, because it uses required 
+  # keyword arguments (i.e. keyword arguments without default values)
+  spec.required_ruby_version = '>= 2.1'
 end
