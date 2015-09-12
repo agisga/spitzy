@@ -2,34 +2,38 @@
 
 # Numerically solves the 2D Poisson's equation:
 #
-#   * "Laplacian of u" = d^2 u / d^2 x + d^2 u / d^2 y = f(x,y),
-#   * on the rectangular domain [xmin,xmax] x [ymin,ymax],
-#   * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
-#     (x,y) is on the boundary of the rectangular domain. 
+# * "Laplacian of u" = d^2 u / d^2 x + d^2 u / d^2 y = f(x,y),
+# * on the rectangular domain [xmin,xmax] x [ymin,ymax],
+# * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
+#   (x,y) is on the boundary of the rectangular domain. 
 #
 class Poissons_eq
 
-  # Attribute reader available for the following attributes:
-  # * +x+      - array of the x coordinates of points in the domain 
-  #              at which the numerical solution was evaluated
-  # * +y+      - array of the y coordinates of points in the domain 
-  #              at which the numerical solution was evaluated
-  # * +mx+     - number of points on the side of the rectangular domain in x direction 
-  # * +my+     - number of points on the side of the rectangular domain in y direction 
-  # * +h+      - step size in x and y
-  # * +mat+    - the matrix of the solved linear system
-  # * +rhs+    - the right hand side of the solved linear system
-  # * +method+ - the numerical scheme applied
-  # * +u+      - the numerical solution as an array (the values are ordered as in +x+ and +y+). 
-  #              It is obtained as a solution to a linear system.
-  attr_reader :x, :y, :mx, :my, :h, :mat, :rhs, :method, :u
+  # array of the x coordinates of points in the domain at which the numerical solution was evaluated
+  attr_reader :x
+  # array of the y coordinates of points in the domain at which the numerical solution was evaluated
+  attr_reader :y
+  # number of points on the side of the rectangular domain in x direction 
+  attr_reader :mx
+  # number of points on the side of the rectangular domain in y direction 
+  attr_reader :my
+  # step size in x and y
+  attr_reader :h
+  # the matrix of the solved linear system
+  attr_reader :mat
+  # the right hand side of the solved linear system
+  attr_reader :rhs
+  # the numerical scheme applied
+  attr_reader :method
+  # the numerical solution as an array (the values are ordered as in +x+ and +y+). It is obtained as a solution to a linear system.
+  attr_reader :u
 
   # Constructor for all solver routines for the 2D Poisson's equation:
   #
-  #   * "Laplacian of u" = d^2 u / d^2 x + d^2 u / d^2 y = f(x,y),
-  #   * on the rectangular domain [xmin,xmax] x [ymin,ymax],
-  #   * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
-  #     (x,y) is on the boundary of the rectangular domain. 
+  # * "Laplacian of u" = d^2 u / d^2 x + d^2 u / d^2 y = f(x,y),
+  # * on the rectangular domain [xmin,xmax] x [ymin,ymax],
+  # * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
+  #   (x,y) is on the boundary of the rectangular domain. 
   #   
   # It initializes the parameters and solves the equation
   # using one of the methods: 
@@ -38,28 +42,26 @@ class Poissons_eq
   # ==== Arguments
   #
   # * +xrange+  - An array of the form [xmin, xmax]. Defines the domain 
-  #               on which the solution will be evaluated.
+  #   on which the solution will be evaluated.
   #
   # * +yrange+  - An array of the form [ymin, ymax]. Defines the domain 
-  #               on which the solution will be evaluated.
+  #   on which the solution will be evaluated.
   #
   # * +h+       - The step size in x and y direction. It should be chosen such that
-  #               subintervals of length +h+ cover the entire x range as well as the
-  #               entire y range. 
+  #   subintervals of length +h+ cover the entire x range as well as the
+  #   entire y range. 
   #
   # * +method+  - The numerical scheme used to solve the differential equation. Possible values are:
-  #               +:five_pt+ (5-point Laplacian), +:nine_pt+ (9-point Laplacian)
-  #               Default is +:five_pt+.
+  #   +:five_pt+ (5-point Laplacian), +:nine_pt+ (9-point Laplacian)
+  #   Default is +:five_pt+.
   #
   # * +bc+      - A +Proc+ or +Numeric+ object. The boundary condition v(x,y) of the differential 
-  #               equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
-  #               supplied then v(x,y) is assumed to be constant equal to that number.
+  #   equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
+  #   supplied then v(x,y) is assumed to be constant equal to that number.
   #
   # * +f+       - A +Proc+ or +Numeric+ object. The right hand side f(x,y) of the differential 
-  #               equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
-  #               supplied then f(x,y) is assumed to be constant equal to that number.
-  #
-  # ==== Usage
+  #   equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
+  #   supplied then f(x,y) is assumed to be constant equal to that number.
   #
   def initialize(xrange:, yrange:, h:, method: :five_pt, bc:, f:)
     raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2
@@ -135,10 +137,10 @@ class Poissons_eq
 
     # Use the five-point Laplacian to solve the 2D Poisson's equation:
     #
-    #   * "Laplacian of u" = d^2 u / d^2 x + d^2 u / d^2 y = f(x,y),
-    #   * on the rectangular domain [xmin,xmax] x [ymin,ymax],
-    #   * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
-    #     (x,y) is on the boundary of the rectangular domain. 
+    # * "Laplacian of u" = d^2 u / d^2 x + d^2 u / d^2 y = f(x,y),
+    # * on the rectangular domain [xmin,xmax] x [ymin,ymax],
+    # * with Dirichlet boundary conditions: u(x,y) = v(x,y) if 
+    #   (x,y) is on the boundary of the rectangular domain. 
     #   
     def five_pt
       # Number of interior points

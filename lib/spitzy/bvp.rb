@@ -2,76 +2,82 @@
 
 # Numerically solves a boundary value problem of the general form:
 #
-#   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
-#   * where a, b, c, f and u are functions of x,
-#   * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2].
+# * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
+# * where a, b, c, f and u are functions of x,
+# * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2].
 #   
 class Bvp
 
-  # Attribute reader available for the following attributes:
-  # * +x+      - array of the points in the domain at which the numerical solution was evaluated
-  # * +mx+     - number of points (i.e. length of +x+)
-  # * +dx+     - step size in x
-  # * +bc+     - the boundary conditions (an array of length two)
-  # * +method+ - the numerical scheme applied
-  # * +u+      - the numerical solution as an array. It is obtained as a solution to a linear system.
-  # * +rhs+    - the right hand side of the solved linear system
-  # * +mat+    - the stiffness matrix, i.e. the matrix of the solved linear system
-  attr_reader :x, :mx, :bc, :method, :u, :rhs, :mat
+  # array of the points in the domain at which the numerical solution was evaluated
+  attr_reader :x
+  # number of grid points (i.e. length of +x+)
+  attr_reader :mx
+  # step size in x
+  attr_reader :dx
+  # the boundary conditions (an array of length two)
+  attr_reader :bc
+  # the numerical scheme applied
+  attr_reader :method
+  # the numerical solution as an array. It is obtained as a solution to a linear system.
+  attr_reader :u
+  # the right hand side of the solved linear system
+  attr_reader :rhs
+  # the stiffness matrix, i.e. the matrix of the solved linear system
+  attr_reader :mat
 
   # Constructor for all solver routines for the boundary value problem:
   #
-  #   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
-  #   * where a, b, c, f and u are functions of x,
-  #   * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2].
+  # * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
+  # * where a, b, c, f and u are functions of x,
+  # * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2].
   #
   # It initializes the parameters and solves the equation
   # using one of the methods: 
-  # Linear Finite Elements. TODO: Implement more methods.
+  # Linear Finite Elements. 
   #
-  # ==== Arguments
+  # === Arguments
   #
   # * +xrange+  - An array of the form [xmin, xmax]. The interval on which the solution will be evaluated.
   #
   # * +mx+      - Number of grid points. Determines the array x of equally spaced values on which the numerical
-  #               solution can be evaluated.
+  #   solution can be evaluated.
   #
   # * +bc+      - An array of length two, specifying the two boundary conditions.
   #
   # * +method+  - The numerical scheme used to solve the BVP. Possible values are:
-  #               +:lin_fin_elt+ (linear finite elements).
+  #   +:lin_fin_elt+ (linear finite elements).
   #
   # * +a+       - A +Proc+ or +Numeric+ object. The function a(x) in the left hand side 
-  #               of the differential equation which can be supplied as a +Proc+ object.
-  #               If a +Numeric+ object is supplied then a(x) is assumed to be constant equal to that number.
+  #   of the differential equation which can be supplied as a +Proc+ object.
+  #   If a +Numeric+ object is supplied then a(x) is assumed to be constant equal to that number.
   #
   # * +b+       - A +Proc+ or +Numeric+ object. The function b(x) in the left hand side 
-  #               of the differential equation which can be supplied as a +Proc+ object.
-  #               If a +Numeric+ object is supplied then b(x) is assumed to be constant equal to that number.
+  #   of the differential equation which can be supplied as a +Proc+ object.
+  #   If a +Numeric+ object is supplied then b(x) is assumed to be constant equal to that number.
   #
   # * +c+       - A +Proc+ or +Numeric+ object. The function c(x) in the left hand side 
-  #               of the differential equation which can be supplied as a +Proc+ object.
-  #               If a +Numeric+ object is supplied then c(x) is assumed to be constant equal to that number.
+  #   of the differential equation which can be supplied as a +Proc+ object.
+  #   If a +Numeric+ object is supplied then c(x) is assumed to be constant equal to that number.
   #
   # * +f+       - A +Proc+ or +Numeric+ object. The right hand side f(x) of the differential 
-  #               equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
-  #               supplied then f(x) is assumed to be constant equal to that number.
+  #   equation, which can be supplied as a +Proc+ object. If a +Numeric+ object is 
+  #   supplied then f(x) is assumed to be constant equal to that number.
   #
   # ==== Usage
   #
-  # # a,b,c and f are Numeric
-  # bvp_sol = Bvp.new(xrange: [0.0, 100.0], mx: 100, bc: [10.0, 0.00090799859], 
-  #                   a: 800.0*Math::PI, b: 0.0, c: 8.0*Math::PI, f: 0.0)
-  #
-  # # a,b,c and f are Proc objects
-  # a = Proc.new { |x| -Math::cos(x) }
-  # b = Proc.new { |x| Math::sin(x) }
-  # c = Proc.new { |x| Math::cos(x) }
-  # f = Proc.new { |x| -2.0*(Math::cos(x))**2 }
-  # xrange = [0.0, 10.0]
-  # bc = [0.0, (1.0 - 10.0) * Math::sin(10.0)]
-  # bvp_sol = Bvp.new(xrange: xrange, mx: 100, bc: bc, 
-  #                   a: a, b: b, c: c, f: f)
+  #   # a,b,c and f are Numeric
+  #   bvp_sol = Spitzy::Bvp.new(xrange: [0.0, 100.0], mx: 100, bc: [10.0, 0.00090799859], 
+  #                             a: 800.0*Math::PI, b: 0.0, c: 8.0*Math::PI, f: 0.0)
+  #  
+  #   # a,b,c and f are Proc objects
+  #   a = Proc.new { |x| -Math::cos(x) }
+  #   b = Proc.new { |x| Math::sin(x) }
+  #   c = Proc.new { |x| Math::cos(x) }
+  #   f = Proc.new { |x| -2.0*(Math::cos(x))**2 }
+  #   xrange = [0.0, 10.0]
+  #   bc = [0.0, (1.0 - 10.0) * Math::sin(10.0)]
+  #   bvp_sol = Spitzy::Bvp.new(xrange: xrange, mx: 100, bc: bc, 
+  #                             a: a, b: b, c: c, f: f)
   #
   def initialize(xrange:, mx:, bc:, method: :lin_fin_elt, a:, b:, c:, f:)
 
@@ -167,15 +173,15 @@ class Bvp
 
     # Solve the boundary value problem
     #
-    #   * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
-    #   * where a, b, c, f and u are functions of x,
-    #   * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2]
+    # * ODE: -(a*u')' + b*u' + c*u = f, xmin<x<xmax,
+    # * where a, b, c, f and u are functions of x,
+    # * with Dirichlet boundary conditions: u(xmin) = bc[1], u(xmax) = bc[2]
     #
     # using the finite elements method with piecewise linear elements.
     #
-    # ==== References
+    # === References
     #
-    # * A. Quarteroni, R. Sacco, F. Saleri, "Numerical Mathematics", 2nd ed., section 7.4.
+    # * A Quarteroni, R Sacco, F Saleri, "Numerical Mathematics", 2nd ed., section 7.4.
     #
     def lin_fin_elt 
       gridcenters = ((@xmin+@dx/2)..(@xmax-@dx/2)).step(@dx).to_a

@@ -10,35 +10,42 @@
 #   
 class AdvectionEq
 
-  # Attribute reader available for the following attributes:
-  # * +dx+ - time step in x                   
-  # * +dt+ - time step in t
-  # * +a+  - parameter in the 1D linear advection equation
-  # * +x+  - array of space points
-  # * +t+  - array of time points
-  # * +mx+ - number of space points (i.e. length of +x+)
-  # * +mt+ - number of time points (i.e. length of +t+)
-  # * +u+  - the numerical solution as an array of arrays
-  # * +method+ - the numerical scheme applied
-  attr_reader :dx, :dt, :a, :x, :t, :mx, :mt, :u, :method
+  # time step in x                   
+  attr_reader :dx
+  # time step in t
+  attr_reader :dt
+  # parameter in the 1D linear advection equation
+  attr_reader :a
+  # array of space points
+  attr_reader :x
+  # array of time points
+  attr_reader :t
+  # number of space points (i.e. length of +x+)
+  attr_reader :mx
+  # number of time points (i.e. length of +t+)
+  attr_reader :mt
+  # the numerical solution as an array of arrays
+  attr_reader :u
+  # the numerical scheme applied
+  attr_reader :method
 
   # Constructor for all solver routines for the 1D linear advection equation:
-  #  * PDE: du/dt + a * du/dx = 0,
-  #  * on the domain: xmin < x < xmax and tmin < t < tmax, 
-  #  * with periodic boundary consitions: u(xmin,t) = u(xmax,t),
-  #  * with initial condition u(x,tmin) as supplied by the user.
+  # * PDE: du/dt + a * du/dx = 0,
+  # * on the domain: xmin < x < xmax and tmin < t < tmax, 
+  # * with periodic boundary consitions: u(xmin,t) = u(xmax,t),
+  # * with initial condition u(x,tmin) as supplied by the user.
   #
   # It initializes the parameters and solves the equation
   # using one of the methods: 
   # Upwind, Leapfrog, Lax-Friedrichs, Lax-Wendroff.
   #
-  # ==== Arguments
+  # === Arguments
   #
   # * +xrange+  - An array of the form [xmin, xmax]. The space domain xmin<=x<=xmax 
-  #               on which the solution will be evaluated.
+  #   on which the solution will be evaluated.
   #
   # * +trange+  - An array of the form [tmin, tmax]. The time domain tmin<=t<=tmax 
-  #               on which the solution will be evaluated.
+  #   on which the solution will be evaluated.
   #
   # * +dx+      - Stepsize in space, i.e. in x
   #
@@ -47,16 +54,16 @@ class AdvectionEq
   # * +a+       - The constant speed +a+ in the PDE du/dt + a * du/dx = 0
   #
   # * +method+ - The numerical scheme used to solve the PDE. Possible values are:
-  #              :upwind, :lax_friedrichs, :leapfrog or :lax_wendroff (default is :lax_wendroff).
+  #   +:upwind+, +:lax_friedrichs+, +:leapfrog+ or +:lax_wendroff+ (default is +:lax_wendroff+).
   #
   # * +&ic+     - The initial condition which must be supplied as a +proc+ object.
-  #               The initial condition is a function in x at time t=0.
+  #   The initial condition is a function in x at time t=0.
   #
   # ==== Usage
   #
-  # ic = proc { |x| Math::cos(2*Math::PI*x) + 0.2*Math::cos(10*Math::PI*x) }
-  # numsol = AdvectionEq.new(xrange: [0.0,1.0], trange: [0.0,10.0], dx: 1.0/101, 
-  #                          dt: 0.95/101, a: 1.0, method: :upwind, &ic)
+  #   ic = proc { |x| Math::cos(2*Math::PI*x) + 0.2*Math::cos(10*Math::PI*x) }
+  #   numsol = Spitzy::AdvectionEq.new(xrange: [0.0,1.0], trange: [0.0,10.0], dx: 1.0/101, 
+  #                                    dt: 0.95/101, a: 1.0, method: :upwind, &ic)
   #
   def initialize(xrange: , trange: , dx: , dt: , a: , method: :lax_wendroff, &ic)
     raise(ArgumentError, "Expected xrange to be an array of length 2") unless xrange.length == 2

@@ -3,35 +3,38 @@
 
 # Numerically solves an initial value problem of the form 
 #
-#  * dy/dx = f(x,y), xmin < x < xmax, 
-#  * y(xmin) = yini
+# * dy/dx = f(x,y), xmin < x < xmax, 
+# * y(xmin) = yini
 #   
 class Ode
 
-  # Attribute reader available for the following attributes:
-  # * +x+  - array of the points in the domain at which the numerical solution was evaluated
-  # * +mx+ - number of points (i.e. length of +x+)
-  # * +fx+ - value of f at every point in x
-  # * +u+  - the numerical solution as an array
-  # * +tol+    - the error tolerance of the method (only applicable for methods
-  #              with automatic step size adjustment)
-  # * +method+ - the numerical scheme applied
-  attr_reader :x, :mx, :fx, :u, :tol, :method
+  # array of the points in the domain at which the numerical solution was evaluated
+  attr_reader :x
+  # number of points (i.e. length of +x+)
+  attr_reader :mx
+  # value of f at every point in x
+  attr_reader :fx
+  # the numerical solution as an array
+  attr_reader :u
+  # the error tolerance of the method (only applicable for methods with automatic step size adjustment)
+  attr_reader :tol
+  # the numerical scheme applied
+  attr_reader :method
 
   # Constructor for all solver routines for the initial value problem:
-  #  * dy/dx = f(x,y), xmin < x < xmax, 
-  #  * y(xmin) = yini
+  # * dy/dx = f(x,y), xmin < x < xmax, 
+  # * y(xmin) = yini
   #
   # It initializes the parameters and solves the equation
   # using one of the methods: 
-  # Dormand-Prince, Forward Euler, Adams-Bashforth order 2. TODO: Implement more methods.
+  # Dormand-Prince, Forward Euler, Adams-Bashforth order 2.
   #
   # ==== Arguments
   #
   # * +xrange+  - An array of the form [xmin, xmax]. The interval on which the solution will be evaluated.
   #
   # * +dx+      - Determines the grid of x values. The length of the x step for methods without automatic step size adjustment,
-  #               or the maximum step size for methods with automatic step size adjustment. 
+  #   or the maximum step size for methods with automatic step size adjustment. 
   #
   # * +yini+    - Initial value for y, i.e. y(xmin).
   #
@@ -40,38 +43,38 @@ class Ode
   # * +maxiter+ - The maximal number of performed iterations for methods with automatic step size adjustment.
   #
   # * +method+  - The numerical scheme used to solve the ODE. Possible values are:
-  #               +:dopri+ (Dormand-Prince), +:euler+ (Forward Euler), +:ab2+ (Adams-Bashforth of order 2). 
-  #               +:dopri+ performs an automatic step size adjustment and error estimation in order to 
-  #               keep the error of the numerical solution below +tol+. +:euler+ and +:ab2+ operate on a 
-  #               fixed step size +dx+, and cannot estimate the error of the numerical solution.
-  #               Currently, the default is +:dopri+ (Dormand-Prince is currently also the default method in MATLAB 
-  #               and GNU Octave's ode45 solver and is the default choice for the Simulink's model explorer solver).
+  #   +:dopri+ (Dormand-Prince), +:euler+ (Forward Euler), +:ab2+ (Adams-Bashforth of order 2). 
+  #   +:dopri+ performs an automatic step size adjustment and error estimation in order to 
+  #   keep the error of the numerical solution below +tol+. +:euler+ and +:ab2+ operate on a 
+  #   fixed step size +dx+, and cannot estimate the error of the numerical solution.
+  #   Currently, the default is +:dopri+ (Dormand-Prince is currently also the default method in MATLAB 
+  #   and GNU Octave's ode45 solver and is the default choice for the Simulink's model explorer solver).
   #
   # * +&f+      - The right hand side of the differential equation which must be supplied as a +proc+ object.
-  #               It is a function of x and y, where x should be the _first_ argument, and y the _second_.
+  #   It is a function of x and y, where x should be the _first_ argument, and y the _second_.
   #
   # ==== Usage
   #
   #    # Dormand-Prince example 1
   #    f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
-  #    dopri_sol = Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, &f) 
+  #    dopri_sol = Spitzy::Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, &f) 
   #    puts "The numerical solution at x=4 is u(4)=#{dopri_sol.u[-1]}"
   #
   #    # Dormand-Prince example 2
   #    f = proc { |t,y| -2.0 * y + Math::exp(-2.0 * (t - 6.0)**2) }
-  #    dopri_sol = Ode.new(xrange: [0.0,10.0], dx: 1.5, yini: 1.0, 
-  #                        tol: 1e-6, maxiter: 1e6, &f) 
+  #    dopri_sol = Spitzy::Ode.new(xrange: [0.0,10.0], dx: 1.5, yini: 1.0, 
+  #                                tol: 1e-6, maxiter: 1e6, &f) 
   #    # Plot dopri_sol.x agains dopri_sol.u to observe step size adaptivity
   #
   #    # Euler example 1
   #    f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
-  #    euler_sol = Ode.new(xrange: [1.0,4.0], dx: 0.01,
-  #                        yini: 0.0, method: :euler, &f) 
+  #    euler_sol = Spitzy::Ode.new(xrange: [1.0,4.0], dx: 0.01,
+  #                                yini: 0.0, method: :euler, &f) 
   #
   #    # Adams-Bashforth example 1
   #    f = proc { |t,y| -2.0*t*y }
-  #    ab2_sol = Ode.new(xrange: [0.0,4.0], dx: 0.1, 
-  #                      yini: 1.0, method: :ab2, &f) 
+  #    ab2_sol = Spitzy::Ode.new(xrange: [0.0,4.0], dx: 0.1, 
+  #                              yini: 1.0, method: :ab2, &f) 
   #    exact_sol = ab2_sol.x.map { |tt| Math::exp(-(tt**2)) }
   #    maxerror1 = exact_sol1.each_with_index.map {|n,i| n - ab2_sol1.u[i] }.max.abs
   #    puts "Number of x steps: #{ab2_sol1.mx}"
@@ -168,8 +171,8 @@ class Ode
     end
  
     # Solve the initial value problem
-    #  * dy/dx = f(x,y), xmin < x < xmax, 
-    #  * y(xmin) = yini
+    # * dy/dx = f(x,y), xmin < x < xmax, 
+    # * y(xmin) = yini
     # with the Dormand-Prince method.
     #
     # This method automatically adapts the step size in order to keep the error
@@ -180,9 +183,9 @@ class Ode
     # 
     # === Reference
     #
-    #     J.R. Dormand, P.J. Prince, "A family of embedded Runge-Kutta formulae"
+    # * J R  Dormand, P J  Prince, "A family of embedded Runge-Kutta formulae"
     #
-    #     E.Hairer, S.P.Norsett and G.Wanner, "Solving Differential Equations I, Nonstiff Problems", p. 176.
+    # * E Hairer, S P Norsett and G Wanner, "Solving Differential Equations I, Nonstiff Problems", p. 176.
     # 
     def dopri
       a21 = 1.0/5.0
