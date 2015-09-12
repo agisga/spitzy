@@ -51,9 +51,9 @@ bundle exec rake install
 
 Feel free to contact me at alexej.go [at] googlemail.com, in case of difficulties with the installation.
 
-## Documentation and Usage Examples
+## Documentation, Tutorials and Usage Examples
 
-* Documentation: <http://agisga.github.io/spitzy/documentation/>
+* Technical Report: <http://agisga.github.io/spitzy/documentation/>
 
 * Slide show: <http://agisga.github.io/presentations/spitzy.html#/>
 
