@@ -8,7 +8,7 @@ The Ruby gem [spitzy](https://github.com/agisga/spitzy.git) is a collection of m
 
 * Project repository: <https://github.com/agisga/spitzy.git>
 
-* Documentation: <http://agisga.github.io/spitzy/documentation/>
+* Technical report: <http://agisga.github.io/spitzy/documentation/>
 
 * Slide show: <http://agisga.github.io/presentations/spitzy.html#/>
 
