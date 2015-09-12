@@ -1,5 +1,7 @@
 # Spitzy
 
+[![Build Status](https://travis-ci.org/agisga/mixed_models.svg?branch=master)](https://travis-ci.org/agisga/mixed_models)
+
 ![Spitzy](spitzy.jpg?raw=true "Optional Title")
 
 Spitzy is this cute pomeranian.
@@ -43,7 +45,8 @@ Then `spitzy` can be installed using the command line (or something similar):
 ```
 git clone https://github.com/agisga/spitzy.git
 cd spitzy/
-rake install
+bundle install
+bundle exec rake install
 ```
 
 Feel free to contact me at alexej.go [at] googlemail.com, in case of difficulties with the installation.
