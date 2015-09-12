@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Documentation (version: 2015-05-07)"
+title:  "Technical Report (version: 2015-05-07)"
 date:   2015-05-07 09:30:00
 ---
 
