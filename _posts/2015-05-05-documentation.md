@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Technical Report (version: 2015-05-07)"
-date:   2015-05-07 09:30:00
+title:  "Technical Report (version: 2015-09-12)"
+date:   2015-09-12
 ---
 
 -------------------------------------
@@ -76,19 +76,7 @@ Spitzy reads backwards as ***YZTIPS***, which translates into:
 <div id='installation'/>
 ### Installation
 
-Ruby is required in version greater than or equal to 2.0 because keyword arguments are excessively used in `spitzy`.
-Moreover, prior to the installation of `spitzy`, currently the `NMatrix` gem needs to be installed in its development version (because `Poissons_eq` uses `#meshgrid`)
- from <https://github.com/SciRuby/nmatrix.git>.
-
-Then `spitzy` can be installed using the command line:
-
-```
-git clone https://github.com/agisga/spitzy.git
-cd spitzy/
-rake install
-```
-
-Feel free to contact the author at alexej.go [at] googlemail.com, in case of difficulties with the installation.
+See [github repository](https://github.com/agisga/spitzy) for instructions.
 
 <div id='ivp'/>
 ##Initial Value Problems
