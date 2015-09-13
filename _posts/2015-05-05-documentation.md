@@ -98,7 +98,7 @@ An initial value problem is an ordinary differential equation of the form
 * ODE: $\frac{dy}{dx} = f(x,y)$ for $a \leq x \leq b$,
 * with initial condition $y(a) = y_0$.
 
-For this kind of differential equation [spitzy](https://github.com/agisga/spitzy.git) provides the class `Ode`, which currently has three methods, [Dormand-Prince](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method), [Forward Euler](http://en.wikipedia.org/wiki/Euler_method) and an [Adams-Bashforth](http://en.wikipedia.org/wiki/Linear_multistep_method) method of order 2.
+For this kind of differential equation [spitzy](https://github.com/agisga/spitzy.git) provides the class `Spitzy::Ode`, which currently has three methods, [Dormand-Prince](http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method), [Forward Euler](http://en.wikipedia.org/wiki/Euler_method) and an [Adams-Bashforth](http://en.wikipedia.org/wiki/Linear_multistep_method) method of order 2.
 
 <div id='dopri'/>
 ###Dormand-Prince
@@ -121,7 +121,7 @@ Dormand-Prince is widely agreed on to be the go-to method for most ordinary diff
 
 #### Implementation
 
-The Dormand-Prince method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:dopri` when defining an `Ode` object.
+The Dormand-Prince method is implemented in the class `Spitzy::Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:dopri` when defining an `Spitzy::Ode` object.
 
 When we apply the Dormand-Prince method, we need to specify the range of $x$ values, the initial condition, the maximal step size that we don't want the method to exceed, and the function $f(x,y)$ (as a `Proc` object or a supplied block). Optionally, we can specify the tolerance level for the error of the obtained numerical solution (the default is 0.01), and the maximal number of iterations for the algorithm (the default is 1e6). Since Dormand-Prince adjusts the step sizes according to an error estimate, the algorithm might require multiple iterations to evaluate the solution at one step, that is, the algorithm will keep on carrying out iterations until it finds a suitable step size (thus opening the door to never ending loops). That is the reason why the maximal number of iterations is a input parameter.
 
@@ -137,13 +137,13 @@ The following Ruby code computes a numerical solution to the above ODE using the
 ```Ruby
 require 'spitzy'
 f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
-dopri_sol = Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, &f) 
+dopri_sol = Spitzy::Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, &f) 
 ```
 
 If additionally we want to set the error tolerance to 1e-6 and the maximal number of performed iterations to 1e6, we can do:
 
 ```Ruby
-dopri_sol = Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, 
+dopri_sol = Spitzy::Ode.new(xrange: [1.0,4.0], dx: 0.1, yini: 0.0, 
                     tol: 1e-6, maxiter: 1e6, &f) 
 ```
 
@@ -152,7 +152,7 @@ We can now plot the obtained numerical solution and the exact solution with any 
 
 ![Dormand-Prince example plot](/spitzy/images/dopri.png?raw=true "Dormand-Prince example plot")
 
-Using the exact solution, we can compute the error of the numerical solution. We can print further information about the obtained solution to the screen, using some of the attribute readers of `Ode`.
+Using the exact solution, we can compute the error of the numerical solution. We can print further information about the obtained solution to the screen, using some of the attribute readers of `Spitzy::Ode`.
 
 ![Dormand-Prince example output](/spitzy/images/dopri_output.png?raw=true "Dormand-Prince example output")
 
@@ -170,7 +170,7 @@ We apply the Dormand-Prince method with error tolerance 1e-6:
 
 ```Ruby
 f = proc { |t,y| -2.0 * y + Math::exp(-2.0 * (t - 6.0)**2) }
-dopri_sol = Ode.new(xrange: [0.0,10.0], dx: 1.5, yini: 1.0, 
+dopri_sol = Spitzy::Ode.new(xrange: [0.0,10.0], dx: 1.5, yini: 1.0, 
                     tol: 1e-6, maxiter: 1e6, &f) 
 ```
 
@@ -190,7 +190,7 @@ It is the most basic explicit method and often serves as a basis to construct mo
 
 #### Implementation
 
-The forward Euler method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:euler` when defining an `Ode` object.  When we apply the method, we need to specify the range of $x$ values, the initial condition, the step size for the $x$-grid, and the function $f(x,y)$ (as a `Proc` object or a supplied block).
+The forward Euler method is implemented in the class `Spitzy::Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:euler` when defining an `Spitzy::Ode` object.  When we apply the method, we need to specify the range of $x$ values, the initial condition, the step size for the $x$-grid, and the function $f(x,y)$ (as a `Proc` object or a supplied block).
 
 In its implementation in `spitzy`, unlike the Dormand-Prince method, the forward Euler method cannot automatically control the step size or estimate the error of the obtained numerical solution. 
 
@@ -205,7 +205,7 @@ Using `spitzy` the following code computes the solution for this initial value p
 
 ```Ruby
 f = proc { |t,y| 1.0 + y/t + (y/t)**2 }
-euler_sol = Ode.new(xrange: [1.0,4.0], dx: 0.01,
+euler_sol = Spitzy::Ode.new(xrange: [1.0,4.0], dx: 0.01,
                     yini: 0.0, method: :euler, &f) 
 ```
 
@@ -226,7 +226,7 @@ $$\frac{y\subscript{n+1} - y\subscript{n}}{h} = b\subscript{0} f(x\subscript{n},
 
 #### Implementation
 
-The second-order Adams-Bashforth method is implemented in the class `Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:ab2` when defining an `Ode` object.
+The second-order Adams-Bashforth method is implemented in the class `Spitzy::Ode` in `spitzy`. It can be utilized by setting the parameter `method` to `:ab2` when defining an `Spitzy::Ode` object.
 As the Euler method, the Adams-Bashforth implementation in `spitzy` operates on a fixed pre specified step size, and takes as inputs the range of $x$ values, the initial condition, the step size for the $x$-grid, and the function $f(x,y)$ (as a `Proc` object or a supplied block).
 
 Since the Adams-Bashforth method requires the last two functional values for the approximation of the next functional value, and since only one initial value is given, we apply [Heun's method](http://en.wikipedia.org/wiki/Heun%27s_method) to approximate the functional value at the second time step. Heun's method is given by the following formula
@@ -246,9 +246,9 @@ The implemented Adams-Bashforth scheme is a method of order two, which means tha
 require 'spitzy'
 
 f = proc { |t,y| -2.0*t*y }
-ab2_sol1 = Ode.new(xrange: [0.0,4.0], dx: 0.1, 
+ab2_sol1 = Spitzy::Ode.new(xrange: [0.0,4.0], dx: 0.1, 
                   yini: 1.0, method: :ab2, &f) 
-ab2_sol2 = Ode.new(xrange: [0.0,4.0], dx: 0.05, 
+ab2_sol2 = Spitzy::Ode.new(xrange: [0.0,4.0], dx: 0.05, 
                    yini: 1.0, method: :ab2, &f) 
 
 exact_sol1 = ab2_sol1.x.map { |tt| Math::exp(-(tt**2)) }
@@ -322,7 +322,7 @@ Given an equally spaced grid $a = x\subscript{0} < x\subscript{1} < \ldots < x\s
 
 #### Implementation
 
-The linear finite element Galerkin method is implemented in class `Bvp` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). It takes as inputs the interval of $x$ values as well as the Dirichlet boundary conditions at the two edges of the interval, the desired number of equally spaced grid points on which the numerical solution will be evaluated, and the functions $\alpha(x)$, $\beta(x)$, $\gamma(x)$ and $f(x)$ as `Proc` objects (or as `Numeric` if the function is constant).
+The linear finite element Galerkin method is implemented in class `Spitzy::Bvp` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). It takes as inputs the interval of $x$ values as well as the Dirichlet boundary conditions at the two edges of the interval, the desired number of equally spaced grid points on which the numerical solution will be evaluated, and the functions $\alpha(x)$, $\beta(x)$, $\gamma(x)$ and $f(x)$ as `Proc` objects (or as `Numeric` if the function is constant).
 
 The linear finite element Galerkin method boils down to a linear system
 $A\vec{u} = \vec{f}$, where the matrix $A$ is tridiagonal. Currently, the Ruby implementation in `spitzy` uses the `#solve` method from the `NMatrix` gem.
@@ -347,7 +347,7 @@ We compute the numerical solution:
 
 ```Ruby
 require 'spitzy'
-bvp_sol = Bvp.new(xrange: [0.0, 100.0], mx: 100, bc: [10.0, 0.00090799859], 
+bvp_sol = Spitzy::Bvp.new(xrange: [0.0, 100.0], mx: 100, bc: [10.0, 0.00090799859], 
                   a: 800.0*Math::PI, b: 0.0, c: 8.0*Math::PI, f: 0.0)
 ```
 
@@ -374,7 +374,7 @@ c = Proc.new { |x| Math::cos(x) }
 f = Proc.new { |x| -2.0*(Math::cos(x))**2 }
 xrange = [0.0, 10.0]
 bc = [0.0, (1.0 - 10.0) * Math::sin(10.0)]
-bvp_sol = Bvp.new(xrange: xrange, mx: 100, bc: bc, 
+bvp_sol = Spitzy::Bvp.new(xrange: xrange, mx: 100, bc: bc, 
                   a: a, b: b, c: c, f: f)
 ```
 
@@ -417,13 +417,13 @@ where $x\subscript{i,j}$ denotes the point in the discretization $\Omega\subscri
 It is an easy exercise to see that this problem reduces to the linear system
 $$A\vec{u} = \vec{b},$$
 where $\vec{u} = (u\subscript{1,1}, u\subscript{2,1}, \ldots, u\subscript{m,1}, \ldots, u\subscript{1,k}, u\subscript{2,k}, \dots, u\subscript{m,k}, \dots, u\subscript{1,n}, u\subscript{2,n}, \dots, u\subscript{m,n})^T$, 
-the matrix $A$ is pentadiagonal with constant values along each (sub-/super-)diagonal, and the right hand side $\vec{b}$ consists of values $f(x\subscript{i,j})$ with the boundary condition $g(x\subscript{i,j})$ subtracted when necessary. For more detail on the construction of $\vec{u}$, $A$ and $\vec{b}$ we refer to the definition of `Bvp` in the `spitzy` code.
+the matrix $A$ is pentadiagonal with constant values along each (sub-/super-)diagonal, and the right hand side $\vec{b}$ consists of values $f(x\subscript{i,j})$ with the boundary condition $g(x\subscript{i,j})$ subtracted when necessary. For more detail on the construction of $\vec{u}$, $A$ and $\vec{b}$ we refer to the definition of `Spitzy::Bvp` in the `spitzy` code.
 
 It can be shown that the five-point Laplacian is a method of second order (see [Arn11]).
 
 #### Implementation
 
-The five-point Laplacian method is implemented in class `Poissons_eq` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). It takes as inputs the rectangular domain in form of a range in $x$-direction and a range in $y$-directions, the step size $h$, the Dirichlet boundary condition as a function of $x$ and $y$, and the right hand side function $f(x,y)$ (each function is passed as a `Proc` object, or as `Numeric` if the function is constant).
+The five-point Laplacian method is implemented in class `Spitzy::PoissonsEq` of the Ruby gem [spitzy](https://github.com/agisga/spitzy). It takes as inputs the rectangular domain in form of a range in $x$-direction and a range in $y$-directions, the step size $h$, the Dirichlet boundary condition as a function of $x$ and $y$, and the right hand side function $f(x,y)$ (each function is passed as a `Proc` object, or as `Numeric` if the function is constant).
 
 A mesh grid is generated with the method `#meshgrid` from the `NMatrix` gem. Currently this method is available only in the development version of `NMatrix`.
 
@@ -443,7 +443,7 @@ The numerical solution can be obtained with `spitzy` via the following three lin
 ```Ruby
 f = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) * (x**2.0 + y**2.0 - 2.0) }
 bc = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) }
-numsol = Poissons_eq.new(xrange: [-1.0,1.0], yrange: [-5.0, 5.0], h: 0.2, bc: bc, f: f)
+numsol = Spitzy::PoissonsEq.new(xrange: [-1.0,1.0], yrange: [-5.0, 5.0], h: 0.2, bc: bc, f: f)
 ```
 
 We plot the numerical solution using the `gnuplot` Ruby gem, and the following code:
@@ -573,12 +573,12 @@ We want to solve the 1D linear advection equation given as:
   * with periodic boundary conditions: $u(0,t) = u(1, t)$,
   * with initial condition: $u(x,0) = \cos(2\pi x) + \frac{1}{5}\cos(10\pi x)$.
 
-We define and solve this equation using the Upwind scheme with time steps $dt = 0.95/1001$ and spatial steps $dx = 1/1001$ (i.e. on a grid of 1000 equally sized intervals in $x$). `AdvectionEq.new` lets the user specify the parameters such as length of the space and time steps, time and space domain, the initial condition, etc.
+We define and solve this equation using the Upwind scheme with time steps $dt = 0.95/1001$ and spatial steps $dx = 1/1001$ (i.e. on a grid of 1000 equally sized intervals in $x$). `Spitzy::AdvectionEq.new` lets the user specify the parameters such as length of the space and time steps, time and space domain, the initial condition, etc.
 
 ```Ruby
 require 'spitzy'
 ic = proc { |x| Math::cos(2*Math::PI*x) + 0.2*Math::cos(10*Math::PI*x) }
-numsol = AdvectionEq.new(xrange: [0.0,1.0], trange: [0.0, 10.0], 
+numsol = Spitzy::AdvectionEq.new(xrange: [0.0,1.0], trange: [0.0, 10.0], 
                          dx: 1.0/1001, dt: 0.95/1001, a: 1.0,
                          method: :upwind, &ic)
 ```
