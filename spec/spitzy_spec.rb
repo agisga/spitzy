@@ -5,7 +5,9 @@ describe Spitzy do
     expect(Spitzy::VERSION).not_to be nil
   end
 
-  # For some reason PoissonEq tests fail unless they run first
+  # For some reason PoissonEq tests fail unless they run first.
+  # Also, for some reason, the PoissonEq tests fail if the solver instance is defined with 
+  # `subject(:num_sol) { ... }`
   describe Spitzy::PoissonsEq do
 
     # Solve the following partial differential equation:
