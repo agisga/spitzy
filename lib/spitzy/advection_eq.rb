@@ -3,10 +3,10 @@
 module Spitzy
   # Numerically solves the 1D linear advection equation:
   #
-  #  * PDE: du/dt + a * du/dx = 0,
-  #  * on the domain: 0 < x < xmax and 0 < t < tmax, 
-  #  * with periodic boundary consitions: u(0,t) = u(xmax, t),
-  #  * with initial condition as supplied by the user.
+  # * PDE: du/dt + a * du/dx = 0,
+  # * on the domain: 0 < x < xmax and 0 < t < tmax, 
+  # * with periodic boundary consitions: u(0,t) = u(xmax, t),
+  # * with initial condition as supplied by the user.
   #   
   class AdvectionEq
 
