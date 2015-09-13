@@ -2,7 +2,7 @@
 
 require "spitzy/version"
 
-require "nmatrix"
+require 'nmatrix/nmatrix'
 require 'nmatrix/lapack_plugin'
 
 require "spitzy/advection_eq.rb"

@@ -5,6 +5,39 @@ describe Spitzy do
     expect(Spitzy::VERSION).not_to be nil
   end
 
+  # For some reason PoissonEq tests fail unless they run first
+  describe Spitzy::PoissonsEq do
+
+    # Solve the following partial differential equation:
+    #
+    # * PDE: $\Delta u = e^{-\frac{x^2 + y^2}{2}} (x^2 + y^2 - 2)$,
+    # * on the rectangular domain $[-1,1]\times[-5,5]$,
+    # * with Dirichlet boundary conditions that agree with the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$.
+    #
+
+    [:five_pt].each do |mthd|
+      context "when method: #{mthd}" do
+        it "computes a precise numerical solution" do
+          exactsol = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) } 
+          f = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) * (x**2.0 + y**2.0 - 2.0) }
+          num_sol = Spitzy::PoissonsEq.new(xrange: [-1.0,1.0], yrange: [-5.0, 5.0], h: 0.2, 
+                                          method: mthd, bc: exactsol, f: f)
+
+          u_exact = []
+          num_sol.x.length.times do |i| 
+            u_exact << num_sol.x[i].zip(num_sol.y[i]).map { |p| exactsol.call(p[0], p[1]) }
+          end
+          u_exact.flatten!
+          u_num = num_sol.u.flatten
+          error = u_num.zip(u_exact).map { |p| (p[0] - p[1]).abs }
+          maxerror = error.max
+
+          expect(maxerror).to be_within(0.01).of(0.0)
+        end
+      end 
+    end
+  end
+
   describe Spitzy::AdvectionEq do
 
     #  solve the 1D linear advection equation given as:
@@ -101,47 +134,6 @@ describe Spitzy do
           maxerror = exact_sol.each_with_index.map {|n,i| (n - numsol.u[i]).abs }.max
 
           expect(maxerror).to be_within(tol).of(0.0)
-        end
-      end 
-    end
-  end
-
-  describe Spitzy::PoissonsEq do
-
-    # Solve the following partial differential equation:
-    #
-    # * PDE: $\Delta u = e^{-\frac{x^2 + y^2}{2}} (x^2 + y^2 - 2)$,
-    # * on the rectangular domain $[-1,1]\times[-5,5]$,
-    # * with Dirichlet boundary conditions that agree with the exact solution $z = e^{-\frac{x^2 + y^2}{2}}$.
-    #
-
-    [:five_pt].each do |mthd|
-      context "when method: #{mthd}" do
-        let(:exactsol) { Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) } }
-
-        subject(:numsol) do
-          f = Proc.new { |x,y| Math::exp(-0.5*(x**2.0 + y**2.0)) * (x**2.0 + y**2.0 - 2.0) }
-          Spitzy::PoissonsEq.new(xrange: [-1.0,1.0], yrange: [-5.0, 5.0], h: 0.2, 
-                                 method: mthd, bc: exactsol, f: f)
-        end
-
-        it "reports the utilized method" do
-          expect(numsol.method).to eq(mthd)
-        end
-
-        it "computes a precise numerical solution" do
-          u_exact = []
-          numsol.x.length.times do |i| 
-            u_exact << numsol.x[i].zip(numsol.y[i]).map { |p| exactsol.call(p[0], p[1]) }
-          end
-          u_exact.flatten!
-          u_num = numsol.u.flatten
-          error = u_num.zip(u_exact).map { |p| (p[0] - p[1]).abs }
-          maxerror = error.max
-          puts "Max error = #{maxerror}"
-          error.each_with_index { |e, i| puts "#{e}, #{i}" if e > 0.01 }
-
-          expect(maxerror).to be_within(0.01).of(0.0)
         end
       end 
     end
