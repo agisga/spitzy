@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["alexej.go@googlemail.com"]
 
   spec.summary       = %q{Solve differential equations in pure Ruby.}
-  spec.description   = %q{A toolbox of numerical differential equation solvers written in pure Ruby.}
+  spec.description   = %q{A toolbox of numerical differential equation solvers written in pure Ruby. Currently there are multiple methods available to solve initial value ODEs (Dormand-Prince, Forward Euler, 2nd order Adams-Bashforth), boundary value ODEs (Linear Finite Element Galerkin), 2D Poisson's equation (5-point Laplacian), and the 1D advection equation (Upwind, Lax-Friedrichs, Leapfrog, Lax-Wendroff).}
   spec.homepage      = "https://github.com/agisga/spitzy.git"
   spec.license       = "MIT"
 
